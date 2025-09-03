@@ -5,34 +5,24 @@ const WEBSITE_CONTEXTS = {
     name: 'Gmail',
     type: 'email',
     prompts: {
-      formal: `Please proofread this email for professional communication. Check for:
-- Professional tone and clarity
-- Proper email etiquette
-- Grammar and spelling errors
-- Appropriate formality level
+      formal: `INSTRUCTION: Fix grammar and spelling in this professional email. Output ONLY the corrected text.
 
-Text to proofread:
+INPUT TEXT:
 "{{TEXT}}"
 
-Corrected email:`,
-      casual: `Please proofread this email for casual communication. Check for:
-- Clear and friendly tone
-- Grammar and spelling errors
-- Natural flow and readability
+OUTPUT (corrected email only):`,
+      casual: `INSTRUCTION: Fix grammar and spelling in this casual email. Output ONLY the corrected text.
 
-Text to proofread:
+INPUT TEXT:
 "{{TEXT}}"
 
-Corrected email:`,
-      default: `Please proofread this email for clarity and correctness. Check for:
-- Grammar and spelling errors
-- Professional but friendly tone
-- Clear communication
+OUTPUT (corrected email only):`,
+      default: `INSTRUCTION: Fix grammar and spelling in this email. Output ONLY the corrected text.
 
-Text to proofread:
+INPUT TEXT:
 "{{TEXT}}"
 
-Corrected email:`
+OUTPUT (corrected email only):`
     },
     settings: {
       showToneOptions: true,
@@ -45,21 +35,18 @@ Corrected email:`
     name: 'Outlook',
     type: 'email',
     prompts: {
-      formal: `Please proofread this Outlook email for business communication. Check for:
-- Professional tone and structure
-- Clear subject matter
-- Grammar and spelling errors
-- Business etiquette
+      formal: `INSTRUCTION: Fix grammar and spelling in this business email. Output ONLY the corrected text.
 
-Text to proofread:
+INPUT TEXT:
 "{{TEXT}}"
 
-Corrected email:`,
-      default: `Please proofread this email for professional communication:
+OUTPUT (corrected email only):`,
+      default: `INSTRUCTION: Fix grammar and spelling in this professional email. Output ONLY the corrected text.
 
+INPUT TEXT:
 "{{TEXT}}"
 
-Corrected email:`
+OUTPUT (corrected email only):`
     },
     settings: {
       showToneOptions: true,
@@ -73,46 +60,36 @@ Corrected email:`
     name: 'GitHub',
     type: 'development',
     prompts: {
-      commit: `Please proofread this commit message for clarity and following conventional commit standards:
+      commit: `INSTRUCTION: Fix grammar and spelling in this commit message. Output ONLY the corrected text.
 
+INPUT TEXT:
 "{{TEXT}}"
 
-Improved commit message:`,
-      pr: `Please proofread this pull request description for technical clarity and completeness. Check for:
-- Clear problem statement
-- Technical accuracy
-- Proper formatting
-- Professional tone
+OUTPUT (corrected commit message only):`,
+      pr: `INSTRUCTION: Fix grammar and spelling in this pull request description. Output ONLY the corrected text.
 
-Text to proofread:
+INPUT TEXT:
 "{{TEXT}}"
 
-Improved PR description:`,
-      issue: `Please proofread this GitHub issue for clarity and completeness. Check for:
-- Clear problem description
-- Steps to reproduce (if applicable)
-- Technical details
-- Professional tone
+OUTPUT (corrected PR description only):`,
+      issue: `INSTRUCTION: Fix grammar and spelling in this GitHub issue. Output ONLY the corrected text.
 
-Text to proofread:
+INPUT TEXT:
 "{{TEXT}}"
 
-Improved issue description:`,
-      comment: `Please proofread this code review comment for constructive and professional feedback:
+OUTPUT (corrected issue only):`,
+      comment: `INSTRUCTION: Fix grammar and spelling in this code review comment. Output ONLY the corrected text.
 
+INPUT TEXT:
 "{{TEXT}}"
 
-Improved comment:`,
-      default: `Please proofread this technical content for GitHub. Check for:
-- Technical accuracy
-- Clear communication
-- Professional tone
-- Proper formatting
+OUTPUT (corrected comment only):`,
+      default: `INSTRUCTION: Fix grammar and spelling in this technical content. Output ONLY the corrected text.
 
-Text to proofread:
+INPUT TEXT:
 "{{TEXT}}"
 
-Corrected text:`
+OUTPUT (corrected text only):`
     },
     settings: {
       showToneOptions: true,
@@ -281,12 +258,12 @@ Improved content:`
     name: 'General',
     type: 'general',
     prompts: {
-      default: `Proofread and correct the following text for spelling, grammar, and style errors. Return ONLY the corrected text with no explanations, no introductory phrases, no quotes, and no additional formatting.
+      default: `INSTRUCTION: Correct spelling and grammar errors in the text below. Output ONLY the corrected text. Do NOT include any introductory phrases, explanations, or conversational text.
 
-Text to correct:
+INPUT TEXT:
 "{{TEXT}}"
 
-Corrected text:`
+OUTPUT (corrected text only):`
     },
     settings: {
       contextHint: 'General proofreading'

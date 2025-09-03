@@ -293,12 +293,12 @@ class LLMProofreader {
       customEndpoint: this.settings.customEndpoint 
     });
     
-    const prompt = `Proofread and correct the following text for spelling, grammar, and style errors. Return ONLY the corrected text with no explanations, no introductory phrases, no quotes, and no additional formatting.
+    const prompt = `INSTRUCTION: Correct spelling and grammar errors in the text below. Output ONLY the corrected text. Do NOT include any introductory phrases, explanations, or conversational text.
 
-Text to correct:
+INPUT TEXT:
 "${text}"
 
-Corrected text:`;
+OUTPUT (corrected text only):`;
 
     try {
       let response;
@@ -587,6 +587,7 @@ Quick test: Visit http://127.0.0.1:11434 in your browser`);
     const wrapperPhrases = [
       /^here\s+is\s+the\s+corrected?\s+text:?\s*/i,
       /^here\s+is\s+the\s+improved\s+text:?\s*/i,
+      /^here\s+is\s+an?\s+improved\s+version:?\s*/i,
       /^corrected\s+text:?\s*/i,
       /^improved\s+text:?\s*/i,
       /^fixed\s+text:?\s*/i,
@@ -596,12 +597,37 @@ Quick test: Visit http://127.0.0.1:11434 in your browser`);
       /^here\s+you\s+go:?\s*/i,
       /^here\s+it\s+is:?\s*/i,
       /^sure[,!]?\s+here\s+is\s+the\s+corrected?\s+text:?\s*/i,
-      /^certainly[,!]?\s+here\s+is\s+the\s+corrected?\s+text:?\s*/i
+      /^certainly[,!]?\s+here\s+is\s+the\s+corrected?\s+text:?\s*/i,
+      /^sure[,!]?\s+i'?d\s+be\s+happy\s+to\s+help.*?here'?s.*?:?\s*/i,
+      /^i'?d\s+be\s+happy\s+to\s+help.*?here'?s.*?:?\s*/i,
+      /^of\s+course[,!]?\s+here'?s.*?:?\s*/i,
+      /^absolutely[,!]?\s+here'?s.*?:?\s*/i,
+      /^here'?s\s+the\s+corrected?\s+version:?\s*/i,
+      /^here'?s\s+an?\s+improved\s+version:?\s*/i,
+      /^here'?s\s+the\s+proofread\s+text:?\s*/i,
+      /^let\s+me\s+help.*?:?\s*/i,
+      /^i\s+can\s+help.*?:?\s*/i
     ];
 
     // Remove wrapper phrases from the beginning
     for (const phrase of wrapperPhrases) {
       cleaned = cleaned.replace(phrase, '');
+    }
+
+    // Additional aggressive cleaning for conversational responses
+    // Look for patterns like "Sure, I'd be happy to help... Here's..."
+    const conversationalPatterns = [
+      /^[^.!?]*?(here'?s\s+(?:the\s+)?(?:corrected?|improved?|proofread|revised)\s+(?:version|text)(?:\s+of\s+(?:the\s+)?text)?):?\s*/i,
+      /^[^.!?]*?(here'?s\s+an?\s+(?:corrected?|improved?|better)\s+version):?\s*/i,
+      /^[^.!?]*?(?:here'?s\s+what\s+i\s+suggest|here\s+are\s+the\s+corrections?):?\s*/i
+    ];
+
+    for (const pattern of conversationalPatterns) {
+      const match = cleaned.match(pattern);
+      if (match) {
+        cleaned = cleaned.substring(match[0].length);
+        break;
+      }
     }
 
     // Remove quotes if the entire response is wrapped in quotes
