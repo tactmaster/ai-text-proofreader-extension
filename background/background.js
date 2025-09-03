@@ -639,7 +639,16 @@ Quick test: Visit http://127.0.0.1:11434 in your browser`);
     // Remove markdown code blocks if present
     cleaned = cleaned.replace(/^```[\w]*\s*\n?/, '').replace(/\n?```\s*$/, '');
 
-    return cleaned.trim();
+    // Preserve formatting by only removing excessive leading/trailing whitespace
+    // Remove leading whitespace (but preserve first line breaks if intentional)
+    cleaned = cleaned.replace(/^\s*\n+/, '').replace(/\n+\s*$/, '');
+    
+    // If result is just whitespace, return empty string
+    if (!cleaned.trim()) {
+      return '';
+    }
+    
+    return cleaned;
   }
 
   async proofreadTextWithContext(text, context) {

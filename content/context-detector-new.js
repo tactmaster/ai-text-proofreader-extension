@@ -146,37 +146,24 @@ class ContextDetector {
       await this.loadCustomSettings();
     }
 
-    console.log(`[ContextDetector] Checking hostname: ${hostname}`);
-    console.log(`[ContextDetector] Custom settings loaded:`, !!this.customSettings);
-    
     // First try to find in custom settings
     if (this.customSettings && this.customSettings.websites) {
-      console.log(`[ContextDetector] Available website categories:`, Object.keys(this.customSettings.websites));
       const context = this.findContextInCustomSettings(hostname);
       if (context) {
-        console.log(`[ContextDetector] Found custom context:`, context);
         return context;
       }
     }
 
-    console.log(`[ContextDetector] No custom context found, falling back to defaults`);
     // Fall back to default contexts
     return this.defaultContexts[hostname] || this.defaultContexts['default'];
   }
 
   findContextInCustomSettings(hostname) {
     const { websites, prompts } = this.customSettings;
-    console.log(`[ContextDetector] Searching in custom websites:`, websites);
     
     // Check each category for the hostname
     for (const [category, websiteList] of Object.entries(websites)) {
-      console.log(`[ContextDetector] Checking category '${category}' with websites:`, websiteList);
-      if (websiteList.some(website => {
-        const match = hostname.includes(website) || website.includes(hostname);
-        console.log(`[ContextDetector] Testing '${website}' against '${hostname}': ${match}`);
-        return match;
-      })) {
-        console.log(`[ContextDetector] Found match in category '${category}'`);
+      if (websiteList.some(website => hostname.includes(website) || website.includes(hostname))) {
         return {
           name: this.getCategoryDisplayName(category),
           type: category,
@@ -191,7 +178,6 @@ class ContextDetector {
       }
     }
     
-    console.log(`[ContextDetector] No custom context found for hostname: ${hostname}`);
     return null;
   }
 
@@ -231,34 +217,27 @@ const contextDetector = new ContextDetector();
 // Helper function to get context for current website
 async function getWebsiteContext() {
   const hostname = window.location.hostname.toLowerCase();
-  console.log(`[Context] Detecting context for hostname: ${hostname}`);
   
   // Use the dynamic context detector first
   const context = await contextDetector.getWebsiteContext(hostname);
   if (context) {
-    console.log(`[Context] Found custom context:`, context);
     return context;
   }
-  
-  console.log(`[Context] No custom context found, checking static contexts...`);
   
   // Fall back to legacy static contexts
   // Check for exact match first
   if (WEBSITE_CONTEXTS[hostname]) {
-    console.log(`[Context] Found exact static match for: ${hostname}`);
     return resolveContext(WEBSITE_CONTEXTS[hostname], hostname);
   }
   
   // Check for subdomain matches
   for (const domain in WEBSITE_CONTEXTS) {
     if (hostname.includes(domain)) {
-      console.log(`[Context] Found subdomain static match: ${domain} in ${hostname}`);
       return resolveContext(WEBSITE_CONTEXTS[domain], domain);
     }
   }
   
   // Return default context
-  console.log(`[Context] No matches found, using default context`);
   return resolveContext(WEBSITE_CONTEXTS['default'], 'default');
 }
 
@@ -278,15 +257,8 @@ async function getContextPrompt(text, toneOverride = null) {
   const context = await getWebsiteContext();
   const tone = toneOverride || context.settings?.defaultTone || 'default';
   
-  console.log(`[ContextPrompt] Using context: ${context.name} (${context.type})`);
-  console.log(`[ContextPrompt] Using tone: ${tone}`);
-  console.log(`[ContextPrompt] Available prompts:`, Object.keys(context.prompts || {}));
-  
   // Use the dynamic context detector for prompt generation
-  const prompt = contextDetector.getContextPrompt(context, text, tone);
-  console.log(`[ContextPrompt] Generated prompt preview:`, prompt.substring(0, 200) + '...');
-  
-  return prompt;
+  return contextDetector.getContextPrompt(context, text, tone);
 }
 
 // Helper function to detect content type based on page elements
