@@ -3,6 +3,37 @@
 // Static contexts for fallback (defined first)
 const WEBSITE_CONTEXTS = {
   // Email platforms
+  'mail.google.com': {
+    name: 'Gmail',
+    type: 'email',
+    prompts: {
+      formal: `INSTRUCTION: Fix grammar and spelling in this professional email. Output ONLY the corrected text. PRESERVE all original formatting including newlines, bullet points, numbered lists, and paragraph breaks.
+
+INPUT TEXT:
+"{{TEXT}}"
+
+OUTPUT (corrected email only):`,
+      casual: `INSTRUCTION: Fix grammar and spelling in this casual email. Output ONLY the corrected text. PRESERVE all original formatting including newlines, bullet points, numbered lists, and paragraph breaks.
+
+INPUT TEXT:
+"{{TEXT}}"
+
+OUTPUT (corrected email only):`,
+      default: `INSTRUCTION: Fix grammar and spelling in this email. Output ONLY the corrected text. PRESERVE all original formatting including newlines, bullet points, numbered lists, and paragraph breaks.
+
+INPUT TEXT:
+"{{TEXT}}"
+
+OUTPUT (corrected email only):`
+    },
+    settings: {
+      showToneOptions: true,
+      defaultTone: 'default',
+      contextHint: 'Email composition detected'
+    }
+  },
+
+  // Gmail aliases
   'gmail.com': {
     name: 'Gmail',
     type: 'email',
@@ -37,13 +68,37 @@ OUTPUT (corrected email only):`
     name: 'Outlook',
     type: 'email',
     prompts: {
-      formal: `INSTRUCTION: Fix grammar and spelling in this business email. Output ONLY the corrected text.
+      formal: `INSTRUCTION: Fix grammar and spelling in this business email. Output ONLY the corrected text. PRESERVE all original formatting including newlines, bullet points, numbered lists, and paragraph breaks.
 
 INPUT TEXT:
 "{{TEXT}}"
 
 OUTPUT (corrected email only):`,
-      default: `INSTRUCTION: Fix grammar and spelling in this professional email. Output ONLY the corrected text.
+      default: `INSTRUCTION: Fix grammar and spelling in this professional email. Output ONLY the corrected text. PRESERVE all original formatting including newlines, bullet points, numbered lists, and paragraph breaks.
+
+INPUT TEXT:
+"{{TEXT}}"
+
+OUTPUT (corrected email only):`
+    },
+    settings: {
+      showToneOptions: true,
+      defaultTone: 'formal',
+      contextHint: 'Business email detected'
+    }
+  },
+
+  'outlook.live.com': {
+    name: 'Outlook',
+    type: 'email',
+    prompts: {
+      formal: `INSTRUCTION: Fix grammar and spelling in this business email. Output ONLY the corrected text. PRESERVE all original formatting including newlines, bullet points, numbered lists, and paragraph breaks.
+
+INPUT TEXT:
+"{{TEXT}}"
+
+OUTPUT (corrected email only):`,
+      default: `INSTRUCTION: Fix grammar and spelling in this professional email. Output ONLY the corrected text. PRESERVE all original formatting including newlines, bullet points, numbered lists, and paragraph breaks.
 
 INPUT TEXT:
 "{{TEXT}}"
@@ -161,7 +216,23 @@ class ContextDetector {
 
     console.log(`[ContextDetector] No custom context found, falling back to defaults`);
     // Fall back to default contexts
-    return this.defaultContexts[hostname] || this.defaultContexts['default'];
+    
+    // First try exact hostname match
+    if (this.defaultContexts[hostname]) {
+      console.log(`[ContextDetector] Found exact default match for: ${hostname}`);
+      return this.defaultContexts[hostname];
+    }
+    
+    // Then try substring matching (for cases like mail.google.com -> gmail.com)
+    for (const domain in this.defaultContexts) {
+      if (domain !== 'default' && (hostname.includes(domain) || domain.includes(hostname))) {
+        console.log(`[ContextDetector] Found substring default match: ${domain} matches ${hostname}`);
+        return this.defaultContexts[domain];
+      }
+    }
+    
+    console.log(`[ContextDetector] No default context found, using fallback`);
+    return this.defaultContexts['default'];
   }
 
   findContextInCustomSettings(hostname) {

@@ -640,8 +640,11 @@ Quick test: Visit http://127.0.0.1:11434 in your browser`);
     cleaned = cleaned.replace(/^```[\w]*\s*\n?/, '').replace(/\n?```\s*$/, '');
 
     // Preserve formatting by only removing excessive leading/trailing whitespace
-    // Remove leading whitespace (but preserve first line breaks if intentional)
-    cleaned = cleaned.replace(/^\s*\n+/, '').replace(/\n+\s*$/, '');
+    // Remove only excessive leading/trailing blank lines, but preserve intentional newlines
+    cleaned = cleaned.replace(/^\n{3,}/, '\n\n').replace(/\n{3,}$/, '\n\n');
+    
+    // Trim only space/tab characters from start and end, but preserve newlines
+    cleaned = cleaned.replace(/^[ \t]+/, '').replace(/[ \t]+$/, '');
     
     // If result is just whitespace, return empty string
     if (!cleaned.trim()) {
