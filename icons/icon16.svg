@@ -1,0 +1,6 @@
+<!-- AI Text Proofreader Icon 16x16 -->
+<svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+  <rect width="16" height="16" rx="2" fill="#4CAF50"/>
+  <text x="8" y="12" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="10" font-weight="bold">AI</text>
+  <circle cx="12" cy="4" r="2" fill="#FFD700" opacity="0.8"/>
+</svg>

@@ -1,0 +1,28 @@
+{
+  "name": "ai-text-proofreader",
+  "version": "1.0.0",
+  "description": "Chrome extension that uses AI/LLM to proofread and correct text in web page input fields",
+  "main": "manifest.json",
+  "scripts": {
+    "dev": "echo 'Load extension in Chrome: chrome://extensions/ > Developer mode > Load unpacked'",
+    "build": "echo 'No build process required for this extension'",
+    "test": "echo 'No tests configured yet'"
+  },
+  "keywords": [
+    "chrome-extension",
+    "ai",
+    "llm",
+    "proofreading",
+    "text-correction",
+    "ollama",
+    "openai"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/ai-text-proofreader"
+  },
+  "devDependencies": {},
+  "dependencies": {}
+}

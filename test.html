@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Text Proofreader - Test Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        .contenteditable {
+            border: 1px solid #ddd;
+            padding: 10px;
+            min-height: 100px;
+            border-radius: 4px;
+            background: #f9f9f9;
+        }
+        .sample-text {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-style: italic;
+        }
+        .instructions {
+            background: #e8f5e8;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            border-left: 4px solid #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 AI Text Proofreader Test Page</h1>
+    
+    <div class="instructions">
+        <h3>How to test the extension:</h3>
+        <ol>
+            <li>Load the extension in Chrome (chrome://extensions/ → Developer mode → Load unpacked)</li>
+            <li>Click on any text field below to see the AI Proofread button</li>
+            <li>Right-click on text fields for context menu options</li>
+            <li>Use the sample text below or write your own text with intentional errors</li>
+            <li>Configure LLM settings in the extension popup</li>
+        </ol>
+    </div>
+
+    <h2>Test Forms</h2>
+
+    <div class="form-group">
+        <label for="short-text">Short Text Input:</label>
+        <input type="text" id="short-text" placeholder="Type some text with spelling erors here...">
+    </div>
+
+    <div class="form-group">
+        <label for="email-field">Email Field:</label>
+        <input type="email" id="email-field" placeholder="test@exampl.com (with typo)">
+    </div>
+
+    <div class="form-group">
+        <label for="long-text">Long Text (Textarea):</label>
+        <textarea id="long-text" placeholder="Paste sample text here or write a longer text with grammar and spelling mistakes..."></textarea>
+    </div>
+
+    <div class="form-group">
+        <label>Content Editable Div:</label>
+        <div class="contenteditable" contenteditable="true">
+            Click here and type some text with erors. This is a content-editable div that should also work with the extension.
+        </div>
+    </div>
+
+    <h2>Sample Texts for Testing</h2>
+    
+    <div class="sample-text">
+        <strong>Sample 1 - Basic Errors:</strong><br>
+        "I have alot of freinds who loves to go swiming in the summmer. There going to the beech tomorrow and I want to go to."
+    </div>
+
+    <div class="sample-text">
+        <strong>Sample 2 - Grammar Issues:</strong><br>
+        "Me and my sister was going to the store yesterday. We buyed some groceries and came back home. The weather were really nice so we decided to walked instead of driving."
+    </div>
+
+    <div class="sample-text">
+        <strong>Sample 3 - Mixed Errors:</strong><br>
+        "The companys new product is very innvoative and will help customer's save alot of money. It's revolutionery technology that noone has seen befor."
+    </div>
+
+    <div class="sample-text">
+        <strong>Sample 4 - Professional Text:</strong><br>
+        "Thank you for you're intrest in our product. We would be hapy to provide more informations about it's features and benifits. Please dont hesitate to contact us if you have any questons."
+    </div>
+
+    <h2>Testing Checklist</h2>
+    <ul>
+        <li>✅ Extension loads without errors</li>
+        <li>✅ Proofread button appears when clicking text fields</li>
+        <li>✅ Right-click context menu works</li>
+        <li>✅ Extension popup opens and displays correctly</li>
+        <li>✅ Settings can be configured</li>
+        <li>✅ LLM connection works (local or cloud)</li>
+        <li>✅ Text corrections are applied correctly</li>
+        <li>✅ Suggestions mode works as expected</li>
+    </ul>
+
+    <h2>Expected LLM Providers</h2>
+    <ul>
+        <li><strong>Local (Ollama):</strong> Requires Ollama installed and running with CORS enabled</li>
+        <li><strong>OpenAI:</strong> Requires valid API key</li>
+        <li><strong>Custom:</strong> Requires custom endpoint URL</li>
+    </ul>
+
+    <div class="instructions">
+        <h3>🚨 Common Issue: 403 Error with Ollama</h3>
+        <p>If you get a 403 error with local LLM, Ollama needs CORS configuration:</p>
+        <p><strong>Windows:</strong> <code>$env:OLLAMA_ORIGINS="*"</code> then <code>ollama serve</code></p>
+        <p><strong>Mac/Linux:</strong> <code>export OLLAMA_ORIGINS="*"</code> then <code>ollama serve</code></p>
+        <p>This allows browser extensions to access the Ollama API.</p>
+    </div>
+
+    <p><em>Copy any sample text above and paste it into the text fields to test the extension functionality.</em></p>
+</body>
+</html>

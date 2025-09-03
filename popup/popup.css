@@ -1,0 +1,362 @@
+/* Popup styles for AI Text Proofreader */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.4;
+    color: #333;
+    background: #f5f5f5;
+}
+
+.container {
+    width: 400px;
+    min-height: 500px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+header {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+    padding: 16px;
+    border-radius: 8px 8px 0 0;
+    text-align: center;
+}
+
+header h1 {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+/* Tabs */
+.tabs {
+    display: flex;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.tab-button {
+    flex: 1;
+    padding: 12px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+    transition: all 0.2s ease;
+}
+
+.tab-button.active {
+    background: white;
+    color: #4CAF50;
+    border-bottom: 2px solid #4CAF50;
+}
+
+.tab-button:hover {
+    background: #e9ecef;
+}
+
+/* Tab content */
+.tab-content {
+    display: none;
+    padding: 20px;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* Sections */
+.section {
+    margin-bottom: 20px;
+}
+
+.section label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+    color: #333;
+}
+
+.section small {
+    display: block;
+    margin-top: 4px;
+    font-size: 12px;
+    color: #666;
+}
+
+/* Form elements */
+input, textarea, select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: inherit;
+    transition: border-color 0.2s ease;
+}
+
+input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+}
+
+textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* Buttons */
+.button-group {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.primary-btn, .secondary-btn {
+    flex: 1;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.primary-btn {
+    background: #4CAF50;
+    color: white;
+}
+
+.primary-btn:hover {
+    background: #45a049;
+    transform: translateY(-1px);
+}
+
+.primary-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.secondary-btn {
+    background: #f8f9fa;
+    color: #333;
+    border: 1px solid #ddd;
+}
+
+.secondary-btn:hover {
+    background: #e9ecef;
+    transform: translateY(-1px);
+}
+
+/* Loading state */
+.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    gap: 10px;
+    color: #666;
+}
+
+.spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #4CAF50;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Suggestions */
+.suggestions-container {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+    background: #f9f9f9;
+}
+
+.suggestion-item {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 8px;
+    border-left: 3px solid #4CAF50;
+}
+
+.suggestion-item:last-child {
+    margin-bottom: 0;
+}
+
+.suggestion-type {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #666;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.suggestion-text {
+    margin-bottom: 4px;
+}
+
+.suggestion-original {
+    text-decoration: line-through;
+    color: #d32f2f;
+    background: #ffebee;
+    padding: 2px 4px;
+    border-radius: 2px;
+}
+
+.suggestion-corrected {
+    color: #4CAF50;
+    background: #e8f5e8;
+    padding: 2px 4px;
+    border-radius: 2px;
+}
+
+.suggestion-explanation {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 6px;
+}
+
+.suggestion-apply {
+    font-size: 12px;
+    padding: 4px 8px;
+    background: #2196F3;
+    color: white;
+    border: none;
+    border-radius: 2px;
+    cursor: pointer;
+}
+
+.suggestion-apply:hover {
+    background: #1976D2;
+}
+
+/* Status messages */
+.status {
+    padding: 12px;
+    border-radius: 4px;
+    margin-top: 10px;
+    font-size: 13px;
+    line-height: 1.4;
+    max-height: 200px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.status.success {
+    background: #e8f5e8;
+    color: #4CAF50;
+    border: 1px solid #c8e6c9;
+}
+
+.status.error {
+    background: #ffebee;
+    color: #d32f2f;
+    border: 1px solid #ffcdd2;
+}
+
+.status.warning {
+    background: #fff8e1;
+    color: #f57c00;
+    border: 1px solid #ffecb3;
+}
+
+/* Settings specific */
+#settings-tab h3 {
+    color: #333;
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+#settings-tab ol {
+    margin-left: 20px;
+    margin-bottom: 10px;
+}
+
+#settings-tab code {
+    background: #f5f5f5;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: 'Monaco', 'Consolas', monospace;
+    font-size: 12px;
+}
+
+#settings-tab a {
+    color: #4CAF50;
+    text-decoration: none;
+}
+
+#settings-tab a:hover {
+    text-decoration: underline;
+}
+
+/* Footer */
+footer {
+    padding: 12px 20px;
+    background: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+    border-radius: 0 0 8px 8px;
+    text-align: center;
+    font-size: 12px;
+    color: #666;
+}
+
+/* Utility classes */
+.hidden {
+    display: none !important;
+}
+
+.debug-container {
+    margin-top: 10px;
+    padding: 10px;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+}
+
+.debug-container textarea {
+    font-family: 'Monaco', 'Consolas', monospace;
+    font-size: 11px;
+    line-height: 1.3;
+    background: #fff;
+    margin-bottom: 8px;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-success {
+    color: #4CAF50;
+}
+
+.text-error {
+    color: #d32f2f;
+}
+
+.text-warning {
+    color: #f57c00;
+}
