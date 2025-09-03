@@ -10,16 +10,16 @@ class TextBoxProofreader {
     this.init();
   }
 
-  init() {
-    this.initializeContext();
+  async init() {
+    await this.initializeContext();
     this.createProofreadButton();
     this.attachEventListeners();
     console.log('AI Text Proofreader content script loaded');
     console.log('Detected context:', this.currentContext?.name || 'General');
   }
 
-  initializeContext() {
-    this.currentContext = getWebsiteContext();
+  async initializeContext() {
+    this.currentContext = await getWebsiteContext();
     this.selectedTone = this.currentContext.settings?.defaultTone || 'default';
     console.log(`[Context] Initialized for ${this.currentContext.name} (${this.currentContext.type})`);
   }
@@ -329,7 +329,7 @@ class TextBoxProofreader {
       }
 
       // Generate context-aware prompt
-      const contextPrompt = getContextPrompt(text, this.selectedTone);
+      const contextPrompt = await getContextPrompt(text, this.selectedTone);
       
       console.log(`[Context] Using ${this.currentContext.name} context with ${this.selectedTone} tone`);
 
@@ -375,7 +375,7 @@ class TextBoxProofreader {
       }
 
       // Generate context-aware prompt for suggestions
-      const contextPrompt = getContextPrompt(text, this.selectedTone);
+      const contextPrompt = await getContextPrompt(text, this.selectedTone);
 
       const response = await chrome.runtime.sendMessage({
         action: 'getSuggestionsWithContext',

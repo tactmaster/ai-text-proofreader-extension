@@ -1,4 +1,99 @@
 // Context-aware proofreading configurations for different websites
+
+// Dynamic context detector that uses custom user settings
+class ContextDetector {
+  constructor() {
+    this.customSettings = null;
+    this.defaultContexts = WEBSITE_CONTEXTS;
+    this.loadCustomSettings();
+  }
+
+  async loadCustomSettings() {
+    try {
+      const result = await chrome.storage.sync.get(['contextSettings']);
+      this.customSettings = result.contextSettings;
+      console.log('[DEBUG] Loaded custom context settings:', this.customSettings);
+    } catch (error) {
+      console.warn('[DEBUG] Failed to load custom context settings:', error);
+      this.customSettings = null;
+    }
+  }
+
+  async getWebsiteContext(hostname) {
+    // Ensure settings are loaded
+    if (!this.customSettings) {
+      await this.loadCustomSettings();
+    }
+
+    // First try to find in custom settings
+    if (this.customSettings && this.customSettings.websites) {
+      const context = this.findContextInCustomSettings(hostname);
+      if (context) {
+        return context;
+      }
+    }
+
+    // Fall back to default contexts
+    return this.defaultContexts[hostname] || this.defaultContexts['default'];
+  }
+
+  findContextInCustomSettings(hostname) {
+    const { websites, prompts } = this.customSettings;
+    
+    // Check each category for the hostname
+    for (const [category, websiteList] of Object.entries(websites)) {
+      if (websiteList.some(website => hostname.includes(website) || website.includes(hostname))) {
+        return {
+          name: this.getCategoryDisplayName(category),
+          type: category,
+          prompts: prompts[category] || {},
+          settings: {
+            showToneOptions: true,
+            defaultTone: 'default',
+            contextHint: `${this.getCategoryDisplayName(category)} detected`
+          },
+          isCustom: true
+        };
+      }
+    }
+    
+    return null;
+  }
+
+  getCategoryDisplayName(category) {
+    const displayNames = {
+      email: 'Email',
+      development: 'Development',
+      social: 'Social Media',
+      documentation: 'Documentation',
+      general: 'General'
+    };
+    return displayNames[category] || category;
+  }
+
+  getContextPrompt(context, text, tone = 'default') {
+    if (!context || !context.prompts) {
+      return this.getDefaultPrompt(text);
+    }
+
+    const prompt = context.prompts[tone] || context.prompts.default || this.getDefaultPrompt(text);
+    return prompt.replace(/\{\{TEXT\}\}/g, text);
+  }
+
+  getDefaultPrompt(text) {
+    return `INSTRUCTION: Correct spelling and grammar errors in the text below. Output ONLY the corrected text. Do NOT include any introductory phrases, explanations, or conversational text.
+
+INPUT TEXT:
+"${text}"
+
+OUTPUT (corrected text only):`;
+  }
+}
+
+// Initialize the context detector
+const contextDetector = new ContextDetector();
+
+// Legacy static contexts for fallback
 const WEBSITE_CONTEXTS = {
   // Email platforms
   'gmail.com': {
@@ -272,9 +367,16 @@ OUTPUT (corrected text only):`
 };
 
 // Helper function to get context for current website
-function getWebsiteContext() {
+async function getWebsiteContext() {
   const hostname = window.location.hostname.toLowerCase();
   
+  // Use the dynamic context detector first
+  const context = await contextDetector.getWebsiteContext(hostname);
+  if (context) {
+    return context;
+  }
+  
+  // Fall back to legacy static contexts
   // Check for exact match first
   if (WEBSITE_CONTEXTS[hostname]) {
     return resolveContext(WEBSITE_CONTEXTS[hostname], hostname);
@@ -307,12 +409,12 @@ function resolveContext(context, key) {
 }
 
 // Helper function to get context-aware prompt
-function getContextPrompt(text, toneOverride = null) {
-  const context = getWebsiteContext();
+async function getContextPrompt(text, toneOverride = null) {
+  const context = await getWebsiteContext();
   const tone = toneOverride || context.settings?.defaultTone || 'default';
-  const prompt = context.prompts[tone] || context.prompts.default;
   
-  return prompt.replace('{{TEXT}}', text);
+  // Use the dynamic context detector for prompt generation
+  return contextDetector.getContextPrompt(context, text, tone);
 }
 
 // Helper function to detect content type based on page elements

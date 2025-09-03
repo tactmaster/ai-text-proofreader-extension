@@ -14,6 +14,7 @@
 
         <div class="tabs">
             <button class="tab-button active" data-tab="proofread">Proofread</button>
+            <button class="tab-button" data-tab="context">Context</button>
             <button class="tab-button" data-tab="settings">Settings</button>
         </div>
 
@@ -46,6 +47,109 @@
             <div id="suggestions-section" class="section hidden">
                 <label>Suggestions:</label>
                 <div id="suggestions-list" class="suggestions-container"></div>
+            </div>
+        </div>
+
+        <!-- Context Tab -->
+        <div id="context-tab" class="tab-content">
+            <div class="section">
+                <h3>🌐 Website Categories</h3>
+                <p>Configure which websites belong to each category:</p>
+                
+                <div class="category-section">
+                    <h4>📧 Email Applications</h4>
+                    <div class="website-list" id="email-websites">
+                        <!-- Dynamic content -->
+                    </div>
+                    <div class="add-website">
+                        <input type="text" id="new-email-website" placeholder="e.g., mail.yahoo.com, protonmail.com">
+                        <button id="add-email-website" class="secondary-btn">+ Add</button>
+                    </div>
+                </div>
+
+                <div class="category-section">
+                    <h4>💻 Development Platforms</h4>
+                    <div class="website-list" id="dev-websites">
+                        <!-- Dynamic content -->
+                    </div>
+                    <div class="add-website">
+                        <input type="text" id="new-dev-website" placeholder="e.g., bitbucket.org, dev.azure.com">
+                        <button id="add-dev-website" class="secondary-btn">+ Add</button>
+                    </div>
+                </div>
+
+                <div class="category-section">
+                    <h4>📱 Social Media</h4>
+                    <div class="website-list" id="social-websites">
+                        <!-- Dynamic content -->
+                    </div>
+                    <div class="add-website">
+                        <input type="text" id="new-social-website" placeholder="e.g., instagram.com, tiktok.com">
+                        <button id="add-social-website" class="secondary-btn">+ Add</button>
+                    </div>
+                </div>
+
+                <div class="category-section">
+                    <h4>📝 Documentation</h4>
+                    <div class="website-list" id="docs-websites">
+                        <!-- Dynamic content -->
+                    </div>
+                    <div class="add-website">
+                        <input type="text" id="new-docs-website" placeholder="e.g., atlassian.net, gitbook.io">
+                        <button id="add-docs-website" class="secondary-btn">+ Add</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>✏️ Custom Prompts</h3>
+                <p>Edit prompts for each category:</p>
+                
+                <div class="prompt-editor">
+                    <label for="category-select">Select Category:</label>
+                    <select id="category-select">
+                        <option value="email">📧 Email</option>
+                        <option value="development">💻 Development</option>
+                        <option value="social">📱 Social Media</option>
+                        <option value="documentation">📝 Documentation</option>
+                        <option value="general">🌐 General</option>
+                    </select>
+                </div>
+
+                <div class="prompt-editor">
+                    <label for="tone-select">Tone/Mode:</label>
+                    <select id="tone-select">
+                        <option value="default">Default</option>
+                        <option value="formal">Formal</option>
+                        <option value="casual">Casual</option>
+                    </select>
+                </div>
+
+                <div class="prompt-editor">
+                    <label for="prompt-text">Prompt Template:</label>
+                    <textarea id="prompt-text" rows="8" placeholder="Enter your custom prompt here. Use {{TEXT}} where the user's text should be inserted."></textarea>
+                    <small>Use <code>{{TEXT}}</code> as a placeholder for the user's input text.</small>
+                </div>
+
+                <div class="button-group">
+                    <button id="save-prompt" class="primary-btn">💾 Save Prompt</button>
+                    <button id="reset-prompt" class="secondary-btn">🔄 Reset to Default</button>
+                    <button id="preview-prompt" class="secondary-btn">👁️ Preview</button>
+                </div>
+
+                <div id="prompt-preview" class="section hidden">
+                    <label>Preview (with sample text):</label>
+                    <div class="preview-container">
+                        <pre id="preview-text"></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button id="save-context-settings" class="primary-btn">💾 Save All Context Settings</button>
+                <button id="reset-context-settings" class="secondary-btn">🔄 Reset All</button>
+                <button id="export-settings" class="secondary-btn">📤 Export Settings</button>
+                <button id="import-settings" class="secondary-btn">📥 Import Settings</button>
             </div>
         </div>
 

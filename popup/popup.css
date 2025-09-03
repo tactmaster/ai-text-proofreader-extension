@@ -360,3 +360,134 @@ footer {
 .text-warning {
     color: #f57c00;
 }
+
+/* Context Tab Styles */
+.category-section {
+    margin-bottom: 20px;
+    padding: 12px;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    background: #f8f9fa;
+}
+
+.category-section h4 {
+    margin-bottom: 8px;
+    color: #333;
+    font-size: 14px;
+}
+
+.website-list {
+    margin-bottom: 8px;
+}
+
+.website-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 8px;
+    margin-bottom: 4px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+.website-item .domain {
+    color: #333;
+    font-family: monospace;
+}
+
+.website-item .remove-btn {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.website-item .remove-btn:hover {
+    background: #c82333;
+}
+
+.add-website {
+    display: flex;
+    gap: 8px;
+}
+
+.add-website input {
+    flex: 1;
+    padding: 6px 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.add-website button {
+    padding: 6px 12px;
+    font-size: 12px;
+}
+
+.prompt-editor {
+    margin-bottom: 12px;
+}
+
+.prompt-editor label {
+    display: block;
+    margin-bottom: 4px;
+    font-weight: 500;
+    color: #333;
+}
+
+.prompt-editor select,
+.prompt-editor textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-family: inherit;
+}
+
+.prompt-editor textarea {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    resize: vertical;
+}
+
+.prompt-editor small {
+    display: block;
+    margin-top: 4px;
+    color: #666;
+    font-size: 11px;
+}
+
+.preview-container {
+    max-height: 200px;
+    overflow-y: auto;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    padding: 12px;
+}
+
+.preview-container pre {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    margin: 0;
+    color: #333;
+}
+
+#context-tab .section h3 {
+    color: #4CAF50;
+    margin-bottom: 8px;
+    font-size: 16px;
+}
+
+/* Import/Export buttons */
+.button-group button.secondary-btn:last-child {
+    margin-left: 4px;
+}
