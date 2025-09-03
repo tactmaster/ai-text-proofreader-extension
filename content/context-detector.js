@@ -7,19 +7,19 @@ const WEBSITE_CONTEXTS = {
     name: 'Gmail',
     type: 'email',
     prompts: {
-      formal: `INSTRUCTION: Fix grammar and spelling in this professional email. Output ONLY the corrected text.
+      formal: `INSTRUCTION: Fix grammar and spelling in this professional email. Output ONLY the corrected text. PRESERVE all original formatting including newlines, bullet points, numbered lists, and paragraph breaks.
 
 INPUT TEXT:
 "{{TEXT}}"
 
 OUTPUT (corrected email only):`,
-      casual: `INSTRUCTION: Fix grammar and spelling in this casual email. Output ONLY the corrected text.
+      casual: `INSTRUCTION: Fix grammar and spelling in this casual email. Output ONLY the corrected text. PRESERVE all original formatting including newlines, bullet points, numbered lists, and paragraph breaks.
 
 INPUT TEXT:
 "{{TEXT}}"
 
 OUTPUT (corrected email only):`,
-      default: `INSTRUCTION: Fix grammar and spelling in this email. Output ONLY the corrected text.
+      default: `INSTRUCTION: Fix grammar and spelling in this email. Output ONLY the corrected text. PRESERVE all original formatting including newlines, bullet points, numbered lists, and paragraph breaks.
 
 INPUT TEXT:
 "{{TEXT}}"
@@ -62,31 +62,31 @@ OUTPUT (corrected email only):`
     name: 'GitHub',
     type: 'development',
     prompts: {
-      commit: `INSTRUCTION: Fix grammar and spelling in this commit message. Output ONLY the corrected text.
+      commit: `INSTRUCTION: Fix grammar and spelling in this commit message. Output ONLY the corrected text. PRESERVE all original formatting including newlines, bullet points, numbered lists, and line breaks.
 
 INPUT TEXT:
 "{{TEXT}}"
 
 OUTPUT (corrected commit message only):`,
-      pr: `INSTRUCTION: Fix grammar and spelling in this pull request description. Output ONLY the corrected text.
+      pr: `INSTRUCTION: Fix grammar and spelling in this pull request description. Output ONLY the corrected text. PRESERVE all original formatting including newlines, bullet points, numbered lists, code blocks, and markdown formatting.
 
 INPUT TEXT:
 "{{TEXT}}"
 
 OUTPUT (corrected PR description only):`,
-      issue: `INSTRUCTION: Fix grammar and spelling in this GitHub issue. Output ONLY the corrected text.
+      issue: `INSTRUCTION: Fix grammar and spelling in this GitHub issue. Output ONLY the corrected text. PRESERVE all original formatting including newlines, bullet points, numbered lists, code blocks, and markdown formatting.
 
 INPUT TEXT:
 "{{TEXT}}"
 
 OUTPUT (corrected issue only):`,
-      comment: `INSTRUCTION: Fix grammar and spelling in this code review comment. Output ONLY the corrected text.
+      comment: `INSTRUCTION: Fix grammar and spelling in this code review comment. Output ONLY the corrected text. PRESERVE all original formatting including newlines, bullet points, numbered lists, code blocks, and markdown formatting.
 
 INPUT TEXT:
 "{{TEXT}}"
 
 OUTPUT (corrected comment only):`,
-      default: `INSTRUCTION: Fix grammar and spelling in this technical content. Output ONLY the corrected text.
+      default: `INSTRUCTION: Fix grammar and spelling in this technical content. Output ONLY the corrected text. PRESERVE all original formatting including newlines, bullet points, numbered lists, code blocks, and markdown formatting.
 
 INPUT TEXT:
 "{{TEXT}}"
@@ -106,7 +106,7 @@ OUTPUT (corrected text only):`
     name: 'General',
     type: 'general',
     prompts: {
-      default: `INSTRUCTION: Correct spelling and grammar errors in the text below. Output ONLY the corrected text. Do NOT include any introductory phrases, explanations, or conversational text.
+      default: `INSTRUCTION: Correct spelling and grammar errors in the text below. Output ONLY the corrected text. PRESERVE all original formatting including newlines, bullet points, numbered lists, and paragraph breaks. Do NOT include any introductory phrases, explanations, or conversational text.
 
 INPUT TEXT:
 "{{TEXT}}"

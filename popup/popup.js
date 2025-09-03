@@ -552,24 +552,24 @@ class PopupController {
       },
       prompts: {
         email: {
-          default: `INSTRUCTION: Fix grammar and spelling in this email. Output ONLY the corrected text.\n\nINPUT TEXT:\n"{{TEXT}}"\n\nOUTPUT (corrected email only):`,
-          formal: `INSTRUCTION: Fix grammar and spelling in this professional email. Output ONLY the corrected text.\n\nINPUT TEXT:\n"{{TEXT}}"\n\nOUTPUT (corrected email only):`,
-          casual: `INSTRUCTION: Fix grammar and spelling in this casual email. Output ONLY the corrected text.\n\nINPUT TEXT:\n"{{TEXT}}"\n\nOUTPUT (corrected email only):`
+          default: `INSTRUCTION: Fix grammar and spelling in this email. Output ONLY the corrected text. PRESERVE all original formatting including newlines, bullet points, numbered lists, and paragraph breaks.\n\nINPUT TEXT:\n"{{TEXT}}"\n\nOUTPUT (corrected email only):`,
+          formal: `INSTRUCTION: Fix grammar and spelling in this professional email. Output ONLY the corrected text. PRESERVE all original formatting including newlines, bullet points, numbered lists, and paragraph breaks.\n\nINPUT TEXT:\n"{{TEXT}}"\n\nOUTPUT (corrected email only):`,
+          casual: `INSTRUCTION: Fix grammar and spelling in this casual email. Output ONLY the corrected text. PRESERVE all original formatting including newlines, bullet points, numbered lists, and paragraph breaks.\n\nINPUT TEXT:\n"{{TEXT}}"\n\nOUTPUT (corrected email only):`
         },
         development: {
-          default: `INSTRUCTION: Fix grammar and spelling in this technical content. Output ONLY the corrected text.\n\nINPUT TEXT:\n"{{TEXT}}"\n\nOUTPUT (corrected text only):`,
-          commit: `INSTRUCTION: Fix grammar and spelling in this commit message. Output ONLY the corrected text.\n\nINPUT TEXT:\n"{{TEXT}}"\n\nOUTPUT (corrected commit message only):`,
-          pr: `INSTRUCTION: Fix grammar and spelling in this pull request description. Output ONLY the corrected text.\n\nINPUT TEXT:\n"{{TEXT}}"\n\nOUTPUT (corrected PR description only):`
+          default: `INSTRUCTION: Fix grammar and spelling in this technical content. Output ONLY the corrected text. PRESERVE all original formatting including newlines, bullet points, numbered lists, code blocks, and markdown formatting.\n\nINPUT TEXT:\n"{{TEXT}}"\n\nOUTPUT (corrected text only):`,
+          commit: `INSTRUCTION: Fix grammar and spelling in this commit message. Output ONLY the corrected text. PRESERVE all original formatting including newlines, bullet points, numbered lists, and line breaks.\n\nINPUT TEXT:\n"{{TEXT}}"\n\nOUTPUT (corrected commit message only):`,
+          pr: `INSTRUCTION: Fix grammar and spelling in this pull request description. Output ONLY the corrected text. PRESERVE all original formatting including newlines, bullet points, numbered lists, code blocks, and markdown formatting.\n\nINPUT TEXT:\n"{{TEXT}}"\n\nOUTPUT (corrected PR description only):`
         },
         social: {
-          default: `INSTRUCTION: Fix grammar and spelling in this social media post. Output ONLY the corrected text.\n\nINPUT TEXT:\n"{{TEXT}}"\n\nOUTPUT (corrected post only):`,
-          formal: `INSTRUCTION: Fix grammar and spelling in this professional social media post. Output ONLY the corrected text.\n\nINPUT TEXT:\n"{{TEXT}}"\n\nOUTPUT (corrected post only):`
+          default: `INSTRUCTION: Fix grammar and spelling in this social media post. Output ONLY the corrected text. PRESERVE all original formatting including newlines, bullet points, numbered lists, and paragraph breaks.\n\nINPUT TEXT:\n"{{TEXT}}"\n\nOUTPUT (corrected post only):`,
+          formal: `INSTRUCTION: Fix grammar and spelling in this professional social media post. Output ONLY the corrected text. PRESERVE all original formatting including newlines, bullet points, numbered lists, and paragraph breaks.\n\nINPUT TEXT:\n"{{TEXT}}"\n\nOUTPUT (corrected post only):`
         },
         documentation: {
-          default: `INSTRUCTION: Fix grammar and spelling in this documentation. Output ONLY the corrected text.\n\nINPUT TEXT:\n"{{TEXT}}"\n\nOUTPUT (corrected documentation only):`
+          default: `INSTRUCTION: Fix grammar and spelling in this documentation. Output ONLY the corrected text. PRESERVE all original formatting including newlines, bullet points, numbered lists, code blocks, and markdown formatting.\n\nINPUT TEXT:\n"{{TEXT}}"\n\nOUTPUT (corrected documentation only):`
         },
         general: {
-          default: `INSTRUCTION: Correct spelling and grammar errors in the text below. Output ONLY the corrected text. Do NOT include any introductory phrases, explanations, or conversational text.\n\nINPUT TEXT:\n"{{TEXT}}"\n\nOUTPUT (corrected text only):`
+          default: `INSTRUCTION: Correct spelling and grammar errors in the text below. Output ONLY the corrected text. PRESERVE all original formatting including newlines, bullet points, numbered lists, and paragraph breaks. Do NOT include any introductory phrases, explanations, or conversational text.\n\nINPUT TEXT:\n"{{TEXT}}"\n\nOUTPUT (corrected text only):`
         }
       }
     };
