@@ -281,7 +281,7 @@ Improved content:`
     name: 'General',
     type: 'general',
     prompts: {
-      default: `Please proofread and correct the following text for spelling, grammar, and style errors. Return only the corrected text without any explanations or additional formatting:
+      default: `Proofread and correct the following text for spelling, grammar, and style errors. Return ONLY the corrected text with no explanations, no introductory phrases, no quotes, and no additional formatting.
 
 Text to correct:
 "{{TEXT}}"

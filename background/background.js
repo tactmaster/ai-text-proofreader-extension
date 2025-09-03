@@ -293,7 +293,7 @@ class LLMProofreader {
       customEndpoint: this.settings.customEndpoint 
     });
     
-    const prompt = `Please proofread and correct the following text for spelling, grammar, and style errors. Return only the corrected text without any explanations or additional formatting:
+    const prompt = `Proofread and correct the following text for spelling, grammar, and style errors. Return ONLY the corrected text with no explanations, no introductory phrases, no quotes, and no additional formatting.
 
 Text to correct:
 "${text}"
@@ -317,7 +317,7 @@ Corrected text:`;
       }
       
       console.log(`[DEBUG] Successfully received response, length: ${response?.length || 0}`);
-      return response;
+      return this.cleanResponse(response);
     } catch (error) {
       console.error('LLM query failed:', error);
       
@@ -513,7 +513,10 @@ Check if Ollama is running: visit http://localhost:11434 in browser`);
         throw new Error(`Ollama returned invalid response format. Expected 'response' field but got: ${JSON.stringify(Object.keys(data))}`);
       }
       
-      return data.response?.trim() || prompt;
+      // Clean up the response by removing common wrapper phrases
+      let cleanedResponse = data.response?.trim() || prompt;
+      cleanedResponse = this.cleanResponse(cleanedResponse);
+      return cleanedResponse;
     } catch (error) {
       console.error(`[ERROR] Ollama connection error:`, error);
       
@@ -572,6 +575,47 @@ Quick test: Visit http://127.0.0.1:11434 in your browser`);
     }
   }
 
+  // Clean response by removing common wrapper phrases that AI models add
+  cleanResponse(response) {
+    if (!response || typeof response !== 'string') {
+      return response;
+    }
+
+    let cleaned = response.trim();
+    
+    // Remove common wrapper phrases (case insensitive)
+    const wrapperPhrases = [
+      /^here\s+is\s+the\s+corrected?\s+text:?\s*/i,
+      /^here\s+is\s+the\s+improved\s+text:?\s*/i,
+      /^corrected\s+text:?\s*/i,
+      /^improved\s+text:?\s*/i,
+      /^fixed\s+text:?\s*/i,
+      /^revised\s+text:?\s*/i,
+      /^the\s+corrected?\s+text\s+is:?\s*/i,
+      /^the\s+improved\s+text\s+is:?\s*/i,
+      /^here\s+you\s+go:?\s*/i,
+      /^here\s+it\s+is:?\s*/i,
+      /^sure[,!]?\s+here\s+is\s+the\s+corrected?\s+text:?\s*/i,
+      /^certainly[,!]?\s+here\s+is\s+the\s+corrected?\s+text:?\s*/i
+    ];
+
+    // Remove wrapper phrases from the beginning
+    for (const phrase of wrapperPhrases) {
+      cleaned = cleaned.replace(phrase, '');
+    }
+
+    // Remove quotes if the entire response is wrapped in quotes
+    if ((cleaned.startsWith('"') && cleaned.endsWith('"')) ||
+        (cleaned.startsWith("'") && cleaned.endsWith("'"))) {
+      cleaned = cleaned.slice(1, -1);
+    }
+
+    // Remove markdown code blocks if present
+    cleaned = cleaned.replace(/^```[\w]*\s*\n?/, '').replace(/\n?```\s*$/, '');
+
+    return cleaned.trim();
+  }
+
   async proofreadTextWithContext(text, context) {
     console.log(`[DEBUG] Starting context-aware proofreading`);
     console.log(`[DEBUG] Context:`, context);
@@ -593,7 +637,7 @@ Quick test: Visit http://127.0.0.1:11434 in your browser`);
       }
       
       console.log(`[DEBUG] Context-aware proofreading completed`);
-      return response;
+      return this.cleanResponse(response);
     } catch (error) {
       console.error('Context-aware proofreading failed:', error);
       throw new Error(`Failed to proofread text with context: ${error.message}`);
@@ -708,7 +752,9 @@ Quick test: Visit http://127.0.0.1:11434 in your browser`);
     }
 
     const data = await response.json();
-    return data.choices?.[0]?.message?.content?.trim() || prompt;
+    let cleanedResponse = data.choices?.[0]?.message?.content?.trim() || prompt;
+    cleanedResponse = this.cleanResponse(cleanedResponse);
+    return cleanedResponse;
   }
 
   async queryCustomEndpoint(prompt) {
@@ -733,7 +779,9 @@ Quick test: Visit http://127.0.0.1:11434 in your browser`);
     }
 
     const data = await response.json();
-    return data.response || data.text || data.output || text;
+    let cleanedResponse = data.response || data.text || data.output || text;
+    cleanedResponse = this.cleanResponse(cleanedResponse);
+    return cleanedResponse;
   }
 
   async getSuggestions(text) {
