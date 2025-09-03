@@ -572,6 +572,113 @@ Quick test: Visit http://127.0.0.1:11434 in your browser`);
     }
   }
 
+  async proofreadTextWithContext(text, context) {
+    console.log(`[DEBUG] Starting context-aware proofreading`);
+    console.log(`[DEBUG] Context:`, context);
+    
+    try {
+      let response;
+      
+      if (this.settings.provider === 'local') {
+        console.log(`[DEBUG] Using local LLM (Ollama) with context`);
+        response = await this.queryLocalLLM(context.prompt);
+      } else if (this.settings.provider === 'openai') {
+        console.log(`[DEBUG] Using OpenAI with context`);
+        response = await this.queryOpenAI(context.prompt);
+      } else if (this.settings.provider === 'custom') {
+        console.log(`[DEBUG] Using custom endpoint with context`);
+        response = await this.queryCustomEndpoint(context.prompt);
+      } else {
+        throw new Error(`Unknown provider: ${this.settings.provider}`);
+      }
+      
+      console.log(`[DEBUG] Context-aware proofreading completed`);
+      return response;
+    } catch (error) {
+      console.error('Context-aware proofreading failed:', error);
+      throw new Error(`Failed to proofread text with context: ${error.message}`);
+    }
+  }
+
+  async getSuggestionsWithContext(text, context) {
+    console.log(`[DEBUG] Getting context-aware suggestions`);
+    console.log(`[DEBUG] Context:`, context);
+    
+    // Modify the prompt to get suggestions instead of corrections
+    const suggestionPrompt = context.prompt.replace(
+      /Return only the corrected text.*?:/gi,
+      'Provide specific suggestions for improvement:'
+    ).replace(
+      /Corrected.*?:/gi,
+      'Suggestions:'
+    );
+    
+    try {
+      let response;
+      
+      if (this.settings.provider === 'local') {
+        response = await this.queryLocalLLM(suggestionPrompt);
+      } else if (this.settings.provider === 'openai') {
+        response = await this.queryOpenAI(suggestionPrompt);
+      } else if (this.settings.provider === 'custom') {
+        response = await this.queryCustomEndpoint(suggestionPrompt);
+      } else {
+        throw new Error(`Unknown provider: ${this.settings.provider}`);
+      }
+      
+      // Parse suggestions from response
+      const suggestions = this.parseSuggestions(response, text);
+      console.log(`[DEBUG] Generated ${suggestions.length} context-aware suggestions`);
+      return suggestions;
+    } catch (error) {
+      console.error('Context-aware suggestions failed:', error);
+      throw new Error(`Failed to get suggestions with context: ${error.message}`);
+    }
+  }
+
+  parseSuggestions(responseText, originalText) {
+    // Simple suggestion parsing - in a real implementation, this would be more sophisticated
+    const suggestions = [];
+    
+    // Split response into lines and look for suggestion patterns
+    const lines = responseText.split('\n').filter(line => line.trim());
+    
+    lines.forEach((line, index) => {
+      if (line.includes('→') || line.includes('->')) {
+        // Format: "original → corrected"
+        const parts = line.split(/→|->/).map(p => p.trim());
+        if (parts.length === 2) {
+          suggestions.push({
+            type: 'Correction',
+            original: parts[0].replace(/['"]/g, ''),
+            corrected: parts[1].replace(/['"]/g, ''),
+            explanation: `Context-aware improvement for ${originalText.slice(0, 20)}...`
+          });
+        }
+      } else if (line.toLowerCase().includes('suggest') || line.toLowerCase().includes('improve')) {
+        // General suggestion
+        suggestions.push({
+          type: 'Suggestion',
+          original: originalText.slice(0, 50) + '...',
+          corrected: line.trim(),
+          explanation: 'General improvement suggestion'
+        });
+      }
+    });
+    
+    // If no specific suggestions found, create a general one
+    if (suggestions.length === 0 && responseText.trim()) {
+      suggestions.push({
+        type: 'General',
+        original: originalText,
+        corrected: responseText.trim(),
+        explanation: 'AI-generated improvement'
+      });
+    }
+    
+    return suggestions.slice(0, 5); // Limit to 5 suggestions
+  }
+
   async queryOpenAI(prompt) {
     if (!this.settings.apiKey) {
       throw new Error('OpenAI API key not configured');
@@ -680,8 +787,28 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         });
       return true; // Will respond asynchronously
 
+    case 'proofreadWithContext':
+      proofreader.proofreadTextWithContext(request.text, request.context)
+        .then(correctedText => {
+          sendResponse({ success: true, correctedText });
+        })
+        .catch(error => {
+          sendResponse({ success: false, error: error.message });
+        });
+      return true; // Will respond asynchronously
+
     case 'getSuggestions':
       proofreader.getSuggestions(request.text)
+        .then(suggestions => {
+          sendResponse({ success: true, suggestions });
+        })
+        .catch(error => {
+          sendResponse({ success: false, error: error.message });
+        });
+      return true; // Will respond asynchronously
+
+    case 'getSuggestionsWithContext':
+      proofreader.getSuggestionsWithContext(request.text, request.context)
         .then(suggestions => {
           sendResponse({ success: true, suggestions });
         })

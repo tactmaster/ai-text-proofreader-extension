@@ -5,19 +5,33 @@ class TextBoxProofreader {
     this.originalText = '';
     this.proofreadButton = null;
     this.suggestionPanel = null;
+    this.currentContext = null;
+    this.selectedTone = null;
     this.init();
   }
 
   init() {
+    this.initializeContext();
     this.createProofreadButton();
     this.attachEventListeners();
     console.log('AI Text Proofreader content script loaded');
+    console.log('Detected context:', this.currentContext?.name || 'General');
+  }
+
+  initializeContext() {
+    this.currentContext = getWebsiteContext();
+    this.selectedTone = this.currentContext.settings?.defaultTone || 'default';
+    console.log(`[Context] Initialized for ${this.currentContext.name} (${this.currentContext.type})`);
   }
 
   createProofreadButton() {
     this.proofreadButton = document.createElement('div');
     this.proofreadButton.id = 'ai-proofread-button';
-    this.proofreadButton.innerHTML = '🔍 AI Proofread';
+    
+    // Get context hint
+    const contextHint = this.currentContext?.settings?.contextHint || 'AI Proofread';
+    this.proofreadButton.innerHTML = `🔍 ${contextHint}`;
+    
     this.proofreadButton.style.cssText = `
       position: absolute;
       background: #4CAF50;
@@ -32,12 +46,16 @@ class TextBoxProofreader {
       z-index: 10000;
       display: none;
       user-select: none;
+      max-width: 200px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     `;
 
     this.proofreadButton.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
-      this.proofreadSelectedText();
+      this.showContextMenu(e);
     });
 
     document.body.appendChild(this.proofreadButton);
@@ -187,21 +205,68 @@ class TextBoxProofreader {
       display: none;
     `;
 
+    const content = document.createElement('div');
+    
+    // Context info
+    const contextInfo = document.createElement('div');
+    contextInfo.innerHTML = `
+      <div style="margin-bottom: 8px; font-weight: bold; color: #666;">
+        📍 ${this.currentContext.name} Context
+      </div>
+    `;
+    content.appendChild(contextInfo);
+
+    // Tone options (if available)
+    if (this.currentContext.settings?.showToneOptions) {
+      const toneSelector = document.createElement('div');
+      toneSelector.style.marginBottom = '8px';
+      
+      const toneLabel = document.createElement('div');
+      toneLabel.textContent = 'Content Type:';
+      toneLabel.style.fontSize = '12px';
+      toneLabel.style.fontWeight = 'bold';
+      toneLabel.style.marginBottom = '4px';
+      toneSelector.appendChild(toneLabel);
+      
+      const toneOptions = this.currentContext.settings.toneOptions || 
+                         Object.keys(this.currentContext.prompts);
+      
+      const toneSelect = document.createElement('select');
+      toneSelect.style.cssText = 'width: 100%; padding: 4px; border: 1px solid #ddd; border-radius: 3px; margin-bottom: 8px;';
+      
+      toneOptions.forEach(tone => {
+        const option = document.createElement('option');
+        option.value = tone;
+        option.textContent = this.formatToneLabel(tone);
+        if (tone === this.selectedTone) option.selected = true;
+        toneSelect.appendChild(option);
+      });
+      
+      toneSelect.addEventListener('change', (e) => {
+        this.selectedTone = e.target.value;
+        console.log(`[Context] Tone changed to: ${this.selectedTone}`);
+      });
+      
+      toneSelector.appendChild(toneSelect);
+      content.appendChild(toneSelector);
+    }
+
+    // Action buttons
     const quickActions = document.createElement('div');
     quickActions.innerHTML = `
-      <div style="margin-bottom: 8px; font-weight: bold;">AI Text Tools</div>
-      <button id="ai-full-proofread" style="display: block; width: 100%; margin-bottom: 4px; padding: 6px; border: 1px solid #ddd; border-radius: 3px; background: #f5f5f5; cursor: pointer;">
-        🔍 Full Proofread
+      <button id="ai-full-proofread" style="display: block; width: 100%; margin-bottom: 4px; padding: 6px; border: 1px solid #ddd; border-radius: 3px; background: #4CAF50; color: white; cursor: pointer;">
+        🔍 Proofread & Apply
       </button>
-      <button id="ai-get-suggestions" style="display: block; width: 100%; margin-bottom: 4px; padding: 6px; border: 1px solid #ddd; border-radius: 3px; background: #f5f5f5; cursor: pointer;">
-        💡 Get Suggestions
+      <button id="ai-get-suggestions" style="display: block; width: 100%; margin-bottom: 4px; padding: 6px; border: 1px solid #ddd; border-radius: 3px; background: #2196F3; color: white; cursor: pointer;">
+        💡 Get Suggestions Only
       </button>
       <button id="ai-settings" style="display: block; width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 3px; background: #f5f5f5; cursor: pointer;">
-        ⚙️ Settings
+        ⚙️ Extension Settings
       </button>
     `;
 
-    this.suggestionPanel.appendChild(quickActions);
+    content.appendChild(quickActions);
+    this.suggestionPanel.appendChild(content);
 
     // Add event listeners
     quickActions.querySelector('#ai-full-proofread').addEventListener('click', () => {
@@ -220,6 +285,23 @@ class TextBoxProofreader {
     });
 
     document.body.appendChild(this.suggestionPanel);
+  }
+
+  formatToneLabel(tone) {
+    const labels = {
+      'default': 'General',
+      'formal': 'Formal/Professional',
+      'casual': 'Casual/Friendly',
+      'commit': 'Commit Message',
+      'pr': 'Pull Request',
+      'issue': 'Issue/Bug Report',
+      'comment': 'Code Review',
+      'post': 'Social Post',
+      'message': 'Direct Message',
+      'question': 'Question',
+      'answer': 'Answer/Solution'
+    };
+    return labels[tone] || tone.charAt(0).toUpperCase() + tone.slice(1);
   }
 
   hideSuggestionPanel() {
@@ -241,14 +323,30 @@ class TextBoxProofreader {
     this.showLoadingState();
 
     try {
+      // Auto-detect content type if not manually selected
+      if (!this.selectedTone || this.selectedTone === 'default') {
+        this.selectedTone = detectContentType();
+      }
+
+      // Generate context-aware prompt
+      const contextPrompt = getContextPrompt(text, this.selectedTone);
+      
+      console.log(`[Context] Using ${this.currentContext.name} context with ${this.selectedTone} tone`);
+
       const response = await chrome.runtime.sendMessage({
-        action: 'proofread',
-        text: text
+        action: 'proofreadWithContext',
+        text: text,
+        context: {
+          website: this.currentContext.key,
+          type: this.currentContext.type,
+          tone: this.selectedTone,
+          prompt: contextPrompt
+        }
       });
 
       if (response.success) {
         this.setElementText(this.selectedElement, response.correctedText);
-        this.showSuccessMessage('Text proofread and corrected!');
+        this.showSuccessMessage(`Text proofread for ${this.currentContext.name} (${this.formatToneLabel(this.selectedTone)})!`);
       } else {
         this.showErrorMessage('Proofreading failed: ' + response.error);
       }
@@ -271,13 +369,30 @@ class TextBoxProofreader {
     this.showLoadingState();
 
     try {
+      // Auto-detect content type if not manually selected
+      if (!this.selectedTone || this.selectedTone === 'default') {
+        this.selectedTone = detectContentType();
+      }
+
+      // Generate context-aware prompt for suggestions
+      const contextPrompt = getContextPrompt(text, this.selectedTone);
+
       const response = await chrome.runtime.sendMessage({
-        action: 'getSuggestions',
-        text: text
+        action: 'getSuggestionsWithContext',
+        text: text,
+        context: {
+          website: this.currentContext.key,
+          type: this.currentContext.type,
+          tone: this.selectedTone,
+          prompt: contextPrompt
+        }
       });
 
       if (response.success) {
-        this.displaySuggestions(response.suggestions);
+        this.displaySuggestions(response.suggestions, {
+          context: this.currentContext.name,
+          tone: this.formatToneLabel(this.selectedTone)
+        });
       } else {
         this.showErrorMessage('Failed to get suggestions: ' + response.error);
       }
@@ -307,7 +422,7 @@ class TextBoxProofreader {
     }
   }
 
-  displaySuggestions(suggestions) {
+  displaySuggestions(suggestions, contextInfo = null) {
     if (!suggestions || suggestions.length === 0) {
       this.showSuccessMessage('No suggestions found - your text looks good!');
       return;
@@ -315,7 +430,14 @@ class TextBoxProofreader {
 
     this.createSuggestionPanel();
     const panel = this.suggestionPanel;
+    
+    const contextHeader = contextInfo ? 
+      `<div style="margin-bottom: 4px; font-size: 12px; color: #666;">
+        📍 ${contextInfo.context} • ${contextInfo.tone}
+      </div>` : '';
+    
     panel.innerHTML = `
+      ${contextHeader}
       <div style="margin-bottom: 8px; font-weight: bold;">Suggestions (${suggestions.length})</div>
       <div id="suggestions-list"></div>
       <button id="apply-all-suggestions" style="margin-top: 8px; padding: 6px 12px; background: #4CAF50; color: white; border: none; border-radius: 3px; cursor: pointer;">
