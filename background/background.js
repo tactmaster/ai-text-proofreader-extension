@@ -293,12 +293,12 @@ class LLMProofreader {
       customEndpoint: this.settings.customEndpoint 
     });
     
-    const prompt = `Please proofread and correct the following text for spelling, grammar, and style errors. Return only the corrected text without any explanations or additional formatting:
+    const prompt = `INSTRUCTION: Correct spelling and grammar errors in the text below. Output ONLY the corrected text. Do NOT include any introductory phrases, explanations, or conversational text.
 
-Text to correct:
+INPUT TEXT:
 "${text}"
 
-Corrected text:`;
+OUTPUT (corrected text only):`;
 
     try {
       let response;
@@ -317,7 +317,7 @@ Corrected text:`;
       }
       
       console.log(`[DEBUG] Successfully received response, length: ${response?.length || 0}`);
-      return response;
+      return this.cleanResponse(response);
     } catch (error) {
       console.error('LLM query failed:', error);
       
@@ -513,7 +513,10 @@ Check if Ollama is running: visit http://localhost:11434 in browser`);
         throw new Error(`Ollama returned invalid response format. Expected 'response' field but got: ${JSON.stringify(Object.keys(data))}`);
       }
       
-      return data.response?.trim() || prompt;
+      // Clean up the response by removing common wrapper phrases
+      let cleanedResponse = data.response?.trim() || prompt;
+      cleanedResponse = this.cleanResponse(cleanedResponse);
+      return cleanedResponse;
     } catch (error) {
       console.error(`[ERROR] Ollama connection error:`, error);
       
@@ -572,6 +575,192 @@ Quick test: Visit http://127.0.0.1:11434 in your browser`);
     }
   }
 
+  // Clean response by removing common wrapper phrases that AI models add
+  cleanResponse(response) {
+    if (!response || typeof response !== 'string') {
+      return response;
+    }
+
+    let cleaned = response.trim();
+    
+    // Remove common wrapper phrases (case insensitive)
+    const wrapperPhrases = [
+      /^here\s+is\s+the\s+corrected?\s+text:?\s*/i,
+      /^here\s+is\s+the\s+improved\s+text:?\s*/i,
+      /^here\s+is\s+an?\s+improved\s+version:?\s*/i,
+      /^corrected\s+text:?\s*/i,
+      /^improved\s+text:?\s*/i,
+      /^fixed\s+text:?\s*/i,
+      /^revised\s+text:?\s*/i,
+      /^the\s+corrected?\s+text\s+is:?\s*/i,
+      /^the\s+improved\s+text\s+is:?\s*/i,
+      /^here\s+you\s+go:?\s*/i,
+      /^here\s+it\s+is:?\s*/i,
+      /^sure[,!]?\s+here\s+is\s+the\s+corrected?\s+text:?\s*/i,
+      /^certainly[,!]?\s+here\s+is\s+the\s+corrected?\s+text:?\s*/i,
+      /^sure[,!]?\s+i'?d\s+be\s+happy\s+to\s+help.*?here'?s.*?:?\s*/i,
+      /^i'?d\s+be\s+happy\s+to\s+help.*?here'?s.*?:?\s*/i,
+      /^of\s+course[,!]?\s+here'?s.*?:?\s*/i,
+      /^absolutely[,!]?\s+here'?s.*?:?\s*/i,
+      /^here'?s\s+the\s+corrected?\s+version:?\s*/i,
+      /^here'?s\s+an?\s+improved\s+version:?\s*/i,
+      /^here'?s\s+the\s+proofread\s+text:?\s*/i,
+      /^let\s+me\s+help.*?:?\s*/i,
+      /^i\s+can\s+help.*?:?\s*/i
+    ];
+
+    // Remove wrapper phrases from the beginning
+    for (const phrase of wrapperPhrases) {
+      cleaned = cleaned.replace(phrase, '');
+    }
+
+    // Additional aggressive cleaning for conversational responses
+    // Look for patterns like "Sure, I'd be happy to help... Here's..."
+    const conversationalPatterns = [
+      /^[^.!?]*?(here'?s\s+(?:the\s+)?(?:corrected?|improved?|proofread|revised)\s+(?:version|text)(?:\s+of\s+(?:the\s+)?text)?):?\s*/i,
+      /^[^.!?]*?(here'?s\s+an?\s+(?:corrected?|improved?|better)\s+version):?\s*/i,
+      /^[^.!?]*?(?:here'?s\s+what\s+i\s+suggest|here\s+are\s+the\s+corrections?):?\s*/i
+    ];
+
+    for (const pattern of conversationalPatterns) {
+      const match = cleaned.match(pattern);
+      if (match) {
+        cleaned = cleaned.substring(match[0].length);
+        break;
+      }
+    }
+
+    // Remove quotes if the entire response is wrapped in quotes
+    if ((cleaned.startsWith('"') && cleaned.endsWith('"')) ||
+        (cleaned.startsWith("'") && cleaned.endsWith("'"))) {
+      cleaned = cleaned.slice(1, -1);
+    }
+
+    // Remove markdown code blocks if present
+    cleaned = cleaned.replace(/^```[\w]*\s*\n?/, '').replace(/\n?```\s*$/, '');
+
+    // Preserve formatting by only removing excessive leading/trailing whitespace
+    // Remove only excessive leading/trailing blank lines, but preserve intentional newlines
+    cleaned = cleaned.replace(/^\n{3,}/, '\n\n').replace(/\n{3,}$/, '\n\n');
+    
+    // Trim only space/tab characters from start and end, but preserve newlines
+    cleaned = cleaned.replace(/^[ \t]+/, '').replace(/[ \t]+$/, '');
+    
+    // If result is just whitespace, return empty string
+    if (!cleaned.trim()) {
+      return '';
+    }
+    
+    return cleaned;
+  }
+
+  async proofreadTextWithContext(text, context) {
+    console.log(`[DEBUG] Starting context-aware proofreading`);
+    console.log(`[DEBUG] Context:`, context);
+    
+    try {
+      let response;
+      
+      if (this.settings.provider === 'local') {
+        console.log(`[DEBUG] Using local LLM (Ollama) with context`);
+        response = await this.queryLocalLLM(context.prompt);
+      } else if (this.settings.provider === 'openai') {
+        console.log(`[DEBUG] Using OpenAI with context`);
+        response = await this.queryOpenAI(context.prompt);
+      } else if (this.settings.provider === 'custom') {
+        console.log(`[DEBUG] Using custom endpoint with context`);
+        response = await this.queryCustomEndpoint(context.prompt);
+      } else {
+        throw new Error(`Unknown provider: ${this.settings.provider}`);
+      }
+      
+      console.log(`[DEBUG] Context-aware proofreading completed`);
+      return this.cleanResponse(response);
+    } catch (error) {
+      console.error('Context-aware proofreading failed:', error);
+      throw new Error(`Failed to proofread text with context: ${error.message}`);
+    }
+  }
+
+  async getSuggestionsWithContext(text, context) {
+    console.log(`[DEBUG] Getting context-aware suggestions`);
+    console.log(`[DEBUG] Context:`, context);
+    
+    // Modify the prompt to get suggestions instead of corrections
+    const suggestionPrompt = context.prompt.replace(
+      /Return only the corrected text.*?:/gi,
+      'Provide specific suggestions for improvement:'
+    ).replace(
+      /Corrected.*?:/gi,
+      'Suggestions:'
+    );
+    
+    try {
+      let response;
+      
+      if (this.settings.provider === 'local') {
+        response = await this.queryLocalLLM(suggestionPrompt);
+      } else if (this.settings.provider === 'openai') {
+        response = await this.queryOpenAI(suggestionPrompt);
+      } else if (this.settings.provider === 'custom') {
+        response = await this.queryCustomEndpoint(suggestionPrompt);
+      } else {
+        throw new Error(`Unknown provider: ${this.settings.provider}`);
+      }
+      
+      // Parse suggestions from response
+      const suggestions = this.parseSuggestions(response, text);
+      console.log(`[DEBUG] Generated ${suggestions.length} context-aware suggestions`);
+      return suggestions;
+    } catch (error) {
+      console.error('Context-aware suggestions failed:', error);
+      throw new Error(`Failed to get suggestions with context: ${error.message}`);
+    }
+  }
+
+  parseSuggestions(responseText, originalText) {
+    // Simple suggestion parsing - in a real implementation, this would be more sophisticated
+    const suggestions = [];
+    
+    // Split response into lines and look for suggestion patterns
+    const lines = responseText.split('\n').filter(line => line.trim());
+    
+    lines.forEach((line, index) => {
+      if (line.includes('→') || line.includes('->')) {
+        // Format: "original → corrected"
+        const parts = line.split(/→|->/).map(p => p.trim());
+        if (parts.length === 2) {
+          suggestions.push({
+            type: 'Correction',
+            original: parts[0].replace(/['"]/g, ''),
+            corrected: parts[1].replace(/['"]/g, ''),
+            explanation: `Context-aware improvement for ${originalText.slice(0, 20)}...`
+          });
+        }
+      } else if (line.toLowerCase().includes('suggest') || line.toLowerCase().includes('improve')) {
+        // General suggestion
+        suggestions.push({
+          type: 'Suggestion',
+          original: originalText.slice(0, 50) + '...',
+          corrected: line.trim(),
+          explanation: 'General improvement suggestion'
+        });
+      }
+    });
+    
+    // If no specific suggestions found, create a general one
+    if (suggestions.length === 0 && responseText.trim()) {
+      suggestions.push({
+        type: 'General',
+        original: originalText,
+        corrected: responseText.trim(),
+        explanation: 'AI-generated improvement'
+      });
+    }
+    
+    return suggestions.slice(0, 5); // Limit to 5 suggestions
+  }
+
   async queryOpenAI(prompt) {
     if (!this.settings.apiKey) {
       throw new Error('OpenAI API key not configured');
@@ -601,7 +790,9 @@ Quick test: Visit http://127.0.0.1:11434 in your browser`);
     }
 
     const data = await response.json();
-    return data.choices?.[0]?.message?.content?.trim() || prompt;
+    let cleanedResponse = data.choices?.[0]?.message?.content?.trim() || prompt;
+    cleanedResponse = this.cleanResponse(cleanedResponse);
+    return cleanedResponse;
   }
 
   async queryCustomEndpoint(prompt) {
@@ -626,7 +817,9 @@ Quick test: Visit http://127.0.0.1:11434 in your browser`);
     }
 
     const data = await response.json();
-    return data.response || data.text || data.output || text;
+    let cleanedResponse = data.response || data.text || data.output || text;
+    cleanedResponse = this.cleanResponse(cleanedResponse);
+    return cleanedResponse;
   }
 
   async getSuggestions(text) {
@@ -680,8 +873,28 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         });
       return true; // Will respond asynchronously
 
+    case 'proofreadWithContext':
+      proofreader.proofreadTextWithContext(request.text, request.context)
+        .then(correctedText => {
+          sendResponse({ success: true, correctedText });
+        })
+        .catch(error => {
+          sendResponse({ success: false, error: error.message });
+        });
+      return true; // Will respond asynchronously
+
     case 'getSuggestions':
       proofreader.getSuggestions(request.text)
+        .then(suggestions => {
+          sendResponse({ success: true, suggestions });
+        })
+        .catch(error => {
+          sendResponse({ success: false, error: error.message });
+        });
+      return true; // Will respond asynchronously
+
+    case 'getSuggestionsWithContext':
+      proofreader.getSuggestionsWithContext(request.text, request.context)
         .then(suggestions => {
           sendResponse({ success: true, suggestions });
         })

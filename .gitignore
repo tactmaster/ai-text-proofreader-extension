@@ -1,5 +1,14 @@
 # Chrome Extension .gitignore
 
+# Dependencies
+node_modules/
+
+# Coverage reports
+coverage/
+
+# Test artifacts
+*.log
+
 # OS generated files
 .DS_Store
 .DS_Store?
