@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Proofreader - Button Positioning Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+        }
+        
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            resize: vertical;
+        }
+        
+        .top-text {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            z-index: 100;
+        }
+        
+        .right-edge-text {
+            position: fixed;
+            top: 100px;
+            right: 10px;
+            width: 200px;
+        }
+        
+        .bottom-text {
+            position: fixed;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+        }
+        
+        .narrow-container {
+            width: 150px;
+            margin: 20px auto;
+        }
+        
+        .description {
+            color: #666;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>AI Proofreader - Button Positioning Test</h1>
+    <p>This page tests various edge cases for the AI proofreader button positioning. Click on each text field and verify the button appears in a visible position.</p>
+    
+    <!-- Test case 1: Text box near top of screen -->
+    <div class="test-section">
+        <h3>Test 1: Top of Screen</h3>
+        <div class="description">Text box positioned near the top - button should appear below when there's no room above.</div>
+        <textarea class="top-text" placeholder="Type here... The AI button should appear below this text box since there's no room above."></textarea>
+    </div>
+    
+    <!-- Test case 2: Text box near right edge -->
+    <div class="test-section">
+        <h3>Test 2: Right Edge of Screen</h3>
+        <div class="description">Text box positioned near right edge - button should appear on the left side.</div>
+        <textarea class="right-edge-text" placeholder="Type here... The AI button should appear on the left side."></textarea>
+    </div>
+    
+    <!-- Test case 3: Text box near bottom -->
+    <div class="test-section">
+        <h3>Test 3: Bottom of Screen</h3>
+        <div class="description">Text box positioned near bottom - button should handle both vertical constraints.</div>
+        <textarea class="bottom-text" placeholder="Type here... The AI button should position appropriately."></textarea>
+    </div>
+    
+    <!-- Test case 4: Normal positioning -->
+    <div class="test-section">
+        <h3>Test 4: Normal Positioning</h3>
+        <div class="description">Regular text box - button should appear in default position (above and to the right).</div>
+        <textarea rows="4" placeholder="Type here... This should show normal button positioning above and to the right."></textarea>
+    </div>
+    
+    <!-- Test case 5: Narrow container -->
+    <div class="test-section">
+        <h3>Test 5: Narrow Container</h3>
+        <div class="description">Text box in narrow container - button should adjust positioning.</div>
+        <div class="narrow-container">
+            <input type="text" placeholder="Narrow input field">
+        </div>
+    </div>
+    
+    <!-- Test case 6: Multiple fields -->
+    <div class="test-section">
+        <h3>Test 6: Multiple Fields</h3>
+        <div class="description">Multiple text fields to test switching between them.</div>
+        <input type="text" placeholder="First field" style="margin-bottom: 10px;">
+        <input type="text" placeholder="Second field" style="margin-bottom: 10px;">
+        <textarea rows="3" placeholder="Third field"></textarea>
+    </div>
+    
+    <!-- Add some height to test scrolling -->
+    <div style="height: 200vh; background: linear-gradient(to bottom, #f5f5f5, #e0e0e0);">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+            <div class="test-section">
+                <h3>Test 7: Scrolled Content</h3>
+                <div class="description">Text field in scrolled content area.</div>
+                <textarea rows="4" placeholder="This field tests positioning with page scroll."></textarea>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Add some debugging info
+        console.log('Test page loaded. Please install the AI Proofreader extension and test the button positioning.');
+        
+        // Monitor window resize for testing responsive behavior
+        window.addEventListener('resize', () => {
+            console.log('Window resized to:', window.innerWidth, 'x', window.innerHeight);
+        });
+    </script>
+</body>
+</html>

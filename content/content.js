@@ -45,13 +45,13 @@ class TextBoxProofreader {
       position: absolute;
       background: #4CAF50;
       color: white;
-      border: none;
+      border: 2px solid white;
       border-radius: 50%;
-      padding: 8px;
+      padding: 6px;
       cursor: pointer;
       font-size: 14px;
       font-family: Arial, sans-serif;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
       z-index: 10000;
       display: none;
       user-select: none;
@@ -60,8 +60,22 @@ class TextBoxProofreader {
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.2s ease;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(4px);
     `;
+
+    // Add hover effect
+    this.proofreadButton.addEventListener('mouseenter', () => {
+      this.proofreadButton.style.transform = 'scale(1.1)';
+      this.proofreadButton.style.background = '#45a049';
+      this.proofreadButton.style.boxShadow = '0 6px 16px rgba(0,0,0,0.4)';
+    });
+
+    this.proofreadButton.addEventListener('mouseleave', () => {
+      this.proofreadButton.style.transform = 'scale(1)';
+      this.proofreadButton.style.background = '#4CAF50';
+      this.proofreadButton.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+    });
 
     this.proofreadButton.addEventListener('click', (e) => {
       e.preventDefault();
@@ -178,9 +192,39 @@ class TextBoxProofreader {
 
   showProofreadButton(element) {
     const rect = element.getBoundingClientRect();
+    const buttonSize = 32; // Button width/height
+    const offset = 8; // Spacing from element
+    
     this.proofreadButton.style.display = 'flex';
-    this.proofreadButton.style.left = (rect.right - 40 + window.scrollX) + 'px';
-    this.proofreadButton.style.top = (rect.top - 40 + window.scrollY) + 'px';
+    
+    // Calculate horizontal position - prefer right side of element
+    let left = rect.right + offset + window.scrollX;
+    
+    // If button would go off right edge of screen, position on left side
+    if (left + buttonSize > window.innerWidth + window.scrollX) {
+      left = rect.left - buttonSize - offset + window.scrollX;
+    }
+    
+    // If still off screen (element too wide), position inside element on right
+    if (left < window.scrollX) {
+      left = rect.right - buttonSize - offset + window.scrollX;
+    }
+    
+    // Calculate vertical position - prefer above element
+    let top = rect.top - buttonSize - offset + window.scrollY;
+    
+    // If button would go above viewport, position below element
+    if (top < window.scrollY) {
+      top = rect.bottom + offset + window.scrollY;
+    }
+    
+    // If still off screen (viewport too small), position inside element at top
+    if (top + buttonSize > window.innerHeight + window.scrollY) {
+      top = rect.top + offset + window.scrollY;
+    }
+    
+    this.proofreadButton.style.left = left + 'px';
+    this.proofreadButton.style.top = top + 'px';
   }
 
   hideProofreadButton() {
@@ -188,10 +232,37 @@ class TextBoxProofreader {
   }
 
   showContextMenu(e) {
-    // Show suggestion panel near cursor
+    // Show suggestion panel near cursor with smart positioning
     this.createSuggestionPanel();
-    this.suggestionPanel.style.left = (e.pageX + 10) + 'px';
-    this.suggestionPanel.style.top = (e.pageY + 10) + 'px';
+    
+    // Estimate panel size (it gets created but size isn't known until rendered)
+    const estimatedWidth = 280;
+    const estimatedHeight = 200;
+    const offset = 10;
+    
+    let left = e.pageX + offset;
+    let top = e.pageY + offset;
+    
+    // Adjust horizontal position if panel would go off right edge
+    if (left + estimatedWidth > window.innerWidth + window.scrollX) {
+      left = e.pageX - estimatedWidth - offset;
+    }
+    
+    // Adjust vertical position if panel would go off bottom edge
+    if (top + estimatedHeight > window.innerHeight + window.scrollY) {
+      top = e.pageY - estimatedHeight - offset;
+    }
+    
+    // Ensure panel doesn't go off left or top edges
+    if (left < window.scrollX) {
+      left = window.scrollX + offset;
+    }
+    if (top < window.scrollY) {
+      top = window.scrollY + offset;
+    }
+    
+    this.suggestionPanel.style.left = left + 'px';
+    this.suggestionPanel.style.top = top + 'px';
     this.suggestionPanel.style.display = 'block';
   }
 
