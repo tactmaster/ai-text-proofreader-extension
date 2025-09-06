@@ -1,5 +1,8 @@
 # AI Text Proofreader Chrome Extension
 
+[![Test Chrome Extension](https://github.com/tactmaster/ai-text-proofreader-extension/actions/workflows/test.yml/badge.svg)](https://github.com/tactmaster/ai-text-proofreader-extension/actions/workflows/test.yml)
+[![Code Quality & Security](https://github.com/tactmaster/ai-text-proofreader-extension/actions/workflows/quality.yml/badge.svg)](https://github.com/tactmaster/ai-text-proofreader-extension/actions/workflows/quality.yml)
+
 A powerful Chrome extension that uses AI/LLM technology to proofread and correct text in any text input field on web pages. Supports both local LLMs (via Ollama) and cloud-based services like OpenAI.
 
 ## Features
@@ -11,6 +14,7 @@ A powerful Chrome extension that uses AI/LLM technology to proofread and correct
 - 💡 **Suggestion Mode**: Get detailed suggestions with explanations before applying changes
 - 🖱️ **Easy Access**: Right-click context menu and floating button for quick access
 - ⚙️ **Flexible Configuration**: Multiple LLM providers with customizable settings
+- 🧪 **Automated Testing**: Comprehensive test suite with 35+ tests ensuring reliability
 
 ## Installation
 
@@ -155,11 +159,55 @@ The extension is ready to use as-is. No build process required.
 4. Test thoroughly
 5. Submit a pull request
 
+## Development & Testing
+
+### Running Tests
+
+The extension includes a comprehensive test suite with 35+ tests covering formatting preservation, context recognition, and anti-patterns.
+
+```bash
+# Run all tests
+npm test
+
+# Run with coverage
+npm run test:coverage
+
+# Run specific test categories
+npm run test:formatting
+npm run test:context
+npm run test:anti-pattern
+
+# Watch mode for development
+npm run test:watch
+```
+
+### Automated Testing
+
+GitHub Actions automatically run tests on:
+- Every push to main and feature branches
+- All pull requests
+- Code quality and security checks
+- Extension validation
+
+### Test Categories
+
+- **Formatting Preservation Tests**: Ensure AI responses preserve newlines, bullets, code blocks
+- **Context Recognition Tests**: Validate website detection and context-aware prompts
+- **Anti-Pattern Tests**: Verify formatting is NOT removed when it shouldn't be
+- **Integration Tests**: Test real-world scenarios with complex formatting
+
 ## License
 
 MIT License - see LICENSE file for details.
 
 ## Changelog
+
+### v1.1.0
+- Context-aware proofreading for different websites
+- Smart button positioning to handle screen edges
+- Comprehensive test suite with automated CI/CD
+- Enhanced formatting preservation
+- Custom prompt editor
 
 ### v1.0.0
 - Initial release

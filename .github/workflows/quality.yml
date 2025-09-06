@@ -1,0 +1,139 @@
+name: Code Quality & Security
+
+on:
+  push:
+    branches: [ main, feature/* ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run npm audit
+      run: npm audit --audit-level=moderate
+      continue-on-error: true
+      
+    - name: Check for sensitive data
+      run: |
+        echo "🔍 Scanning for sensitive data patterns..."
+        
+        # Check for potential API keys, passwords, etc.
+        if grep -r -i "api[_-]key\|password\|secret\|token" --include="*.js" --include="*.json" --exclude-dir=node_modules --exclude-dir=.git .; then
+          echo "⚠️  Potential sensitive data found. Please review the above matches."
+          echo "Note: Some matches may be false positives (like 'apiKey' in variable names)"
+        else
+          echo "✅ No obvious sensitive data patterns found"
+        fi
+        
+    - name: Check for console.log statements
+      run: |
+        echo "🔍 Checking for console.log statements in production code..."
+        
+        # Allow console.log in test files, but warn about them in production code
+        if find . -name "*.js" -not -path "./tests/*" -not -path "./node_modules/*" -exec grep -l "console\.log" {} \;; then
+          echo "⚠️  Found console.log statements in production code. Consider removing or using conditional logging."
+        else
+          echo "✅ No console.log statements found in production code"
+        fi
+
+  permissions-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Validate Chrome Extension Permissions
+      run: |
+        echo "🔍 Validating Chrome Extension permissions..."
+        
+        node -e "
+          const manifest = require('./manifest.json');
+          const permissions = manifest.permissions || [];
+          
+          console.log('📋 Extension permissions:', permissions);
+          
+          // Check for potentially dangerous permissions
+          const dangerousPermissions = [
+            'tabs',           // Access to all tabs
+            '<all_urls>',     // Access to all websites
+            'history',        // Browsing history
+            'bookmarks',      // User bookmarks
+            'cookies',        // All cookies
+            'downloads',      // Download history
+            'management'      // Other extensions
+          ];
+          
+          const foundDangerous = permissions.filter(p => 
+            dangerousPermissions.some(d => p.includes(d))
+          );
+          
+          if (foundDangerous.length > 0) {
+            console.log('⚠️  Found potentially sensitive permissions:', foundDangerous);
+            console.log('Please ensure these permissions are necessary for the extension functionality.');
+          } else {
+            console.log('✅ No overly broad permissions detected');
+          }
+          
+          // Validate content script matches
+          const contentScripts = manifest.content_scripts || [];
+          contentScripts.forEach((script, index) => {
+            const matches = script.matches || [];
+            console.log(\`📄 Content script \${index + 1} matches:\`, matches);
+            
+            if (matches.includes('<all_urls>') || matches.includes('*://*/*')) {
+              console.log('⚠️  Content script has very broad match patterns');
+            }
+          });
+          
+          console.log('✅ Permissions validation complete');
+        "
+
+  format-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Check code formatting
+      run: |
+        echo "🔍 Checking code formatting and style..."
+        
+        # Check for consistent indentation
+        echo "Checking for consistent indentation..."
+        if find . -name "*.js" -not -path "./node_modules/*" -exec grep -l $'\t' {} \;; then
+          echo "⚠️  Found tab characters. Consider using consistent spacing."
+        else
+          echo "✅ No tab characters found"
+        fi
+        
+        # Check for trailing whitespace
+        echo "Checking for trailing whitespace..."
+        if find . -name "*.js" -not -path "./node_modules/*" -exec grep -l " $" {} \;; then
+          echo "⚠️  Found trailing whitespace"
+        else
+          echo "✅ No trailing whitespace found"
+        fi
+        
+        # Check for CRLF line endings (should be LF in repository)
+        echo "Checking line endings..."
+        if find . -name "*.js" -not -path "./node_modules/*" -exec grep -l $'\r' {} \;; then
+          echo "⚠️  Found CRLF line endings. Repository should use LF."
+        else
+          echo "✅ Consistent LF line endings"
+        fi

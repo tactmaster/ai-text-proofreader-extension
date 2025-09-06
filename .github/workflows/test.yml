@@ -1,0 +1,135 @@
+name: Test Chrome Extension
+
+on:
+  push:
+    branches: [ main, feature/* ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run tests
+      run: npm test
+      
+    - name: Run test coverage
+      run: npm run test:coverage
+      
+    - name: Upload coverage reports
+      uses: codecov/codecov-action@v4
+      if: matrix.node-version == '20.x'
+      with:
+        file: ./coverage/lcov.info
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+
+  lint:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Check for syntax errors
+      run: |
+        echo "Checking JavaScript syntax..."
+        node -c background/background.js
+        node -c content/content.js
+        node -c content/context-detector.js
+        node -c popup/popup.js
+        
+    - name: Validate manifest.json
+      run: |
+        echo "Validating Chrome extension manifest..."
+        node -e "
+          const fs = require('fs');
+          const manifest = JSON.parse(fs.readFileSync('manifest.json', 'utf8'));
+          console.log('✅ Manifest version:', manifest.manifest_version);
+          console.log('✅ Extension name:', manifest.name);
+          console.log('✅ Extension version:', manifest.version);
+          if (manifest.manifest_version !== 3) {
+            throw new Error('Manifest must be version 3');
+          }
+        "
+
+  extension-validation:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        
+    - name: Validate Chrome Extension Structure
+      run: |
+        echo "🔍 Validating Chrome Extension structure..."
+        
+        # Check required files exist
+        echo "Checking required files..."
+        test -f manifest.json || { echo "❌ manifest.json missing"; exit 1; }
+        test -f background/background.js || { echo "❌ background script missing"; exit 1; }
+        test -f content/content.js || { echo "❌ content script missing"; exit 1; }
+        test -f popup/popup.html || { echo "❌ popup HTML missing"; exit 1; }
+        test -f popup/popup.js || { echo "❌ popup script missing"; exit 1; }
+        echo "✅ All required files present"
+        
+        # Check manifest structure
+        echo "Validating manifest structure..."
+        node -e "
+          const manifest = require('./manifest.json');
+          const required = ['manifest_version', 'name', 'version', 'description'];
+          required.forEach(field => {
+            if (!manifest[field]) throw new Error(\`Missing required field: \${field}\`);
+          });
+          console.log('✅ Manifest structure valid');
+        "
+        
+        # Check content script files exist
+        echo "Validating content scripts..."
+        node -e "
+          const manifest = require('./manifest.json');
+          const contentScripts = manifest.content_scripts || [];
+          contentScripts.forEach(script => {
+            script.js.forEach(file => {
+              const fs = require('fs');
+              if (!fs.existsSync(file)) {
+                throw new Error(\`Content script file missing: \${file}\`);
+              }
+            });
+          });
+          console.log('✅ Content scripts valid');
+        "
+        
+        echo "🎉 Chrome Extension validation passed!"
