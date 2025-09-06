@@ -28,28 +28,31 @@ class TextBoxProofreader {
     this.proofreadButton = document.createElement('div');
     this.proofreadButton.id = 'ai-proofread-button';
     
-    // Get context hint
+    // Get context hint for tooltip
     const contextHint = this.currentContext?.settings?.contextHint || 'AI Proofread';
-    this.proofreadButton.innerHTML = `🔍 ${contextHint}`;
+    this.proofreadButton.innerHTML = `🔍`;
+    this.proofreadButton.title = contextHint; // Tooltip
     
     this.proofreadButton.style.cssText = `
       position: absolute;
       background: #4CAF50;
       color: white;
       border: none;
-      border-radius: 4px;
-      padding: 8px 12px;
+      border-radius: 50%;
+      padding: 8px;
       cursor: pointer;
-      font-size: 12px;
+      font-size: 14px;
       font-family: Arial, sans-serif;
       box-shadow: 0 2px 4px rgba(0,0,0,0.2);
       z-index: 10000;
       display: none;
       user-select: none;
-      max-width: 200px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
     `;
 
     this.proofreadButton.addEventListener('click', (e) => {
@@ -167,9 +170,9 @@ class TextBoxProofreader {
 
   showProofreadButton(element) {
     const rect = element.getBoundingClientRect();
-    this.proofreadButton.style.display = 'block';
-    this.proofreadButton.style.left = (rect.right - 120 + window.scrollX) + 'px';
-    this.proofreadButton.style.top = (rect.top - 35 + window.scrollY) + 'px';
+    this.proofreadButton.style.display = 'flex';
+    this.proofreadButton.style.left = (rect.right - 40 + window.scrollX) + 'px';
+    this.proofreadButton.style.top = (rect.top - 40 + window.scrollY) + 'px';
   }
 
   hideProofreadButton() {
@@ -254,14 +257,14 @@ class TextBoxProofreader {
     // Action buttons
     const quickActions = document.createElement('div');
     quickActions.innerHTML = `
-      <button id="ai-full-proofread" style="display: block; width: 100%; margin-bottom: 4px; padding: 6px; border: 1px solid #ddd; border-radius: 3px; background: #4CAF50; color: white; cursor: pointer;">
-        🔍 Proofread & Apply
+      <button id="ai-full-proofread" title="Proofread & Apply" style="display: inline-block; margin-right: 4px; margin-bottom: 4px; padding: 8px; border: 1px solid #ddd; border-radius: 50%; background: #4CAF50; color: white; cursor: pointer; font-size: 16px; width: 36px; height: 36px;">
+        🔍
       </button>
-      <button id="ai-get-suggestions" style="display: block; width: 100%; margin-bottom: 4px; padding: 6px; border: 1px solid #ddd; border-radius: 3px; background: #2196F3; color: white; cursor: pointer;">
-        💡 Get Suggestions Only
+      <button id="ai-get-suggestions" title="Get Suggestions Only" style="display: inline-block; margin-right: 4px; margin-bottom: 4px; padding: 8px; border: 1px solid #ddd; border-radius: 50%; background: #2196F3; color: white; cursor: pointer; font-size: 16px; width: 36px; height: 36px;">
+        💡
       </button>
-      <button id="ai-settings" style="display: block; width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 3px; background: #f5f5f5; cursor: pointer;">
-        ⚙️ Extension Settings
+      <button id="ai-settings" title="Extension Settings" style="display: inline-block; margin-bottom: 4px; padding: 8px; border: 1px solid #ddd; border-radius: 50%; background: #f5f5f5; cursor: pointer; font-size: 16px; width: 36px; height: 36px;">
+        ⚙️
       </button>
     `;
 
@@ -498,12 +501,14 @@ class TextBoxProofreader {
   }
 
   showLoadingState() {
-    this.proofreadButton.innerHTML = '⏳ Processing...';
+    this.proofreadButton.innerHTML = '⏳';
+    this.proofreadButton.title = 'Processing...';
     this.proofreadButton.style.background = '#FF9800';
   }
 
   hideLoadingState() {
-    this.proofreadButton.innerHTML = '🔍 AI Proofread';
+    this.proofreadButton.innerHTML = '🔍';
+    this.proofreadButton.title = this.currentContext?.settings?.contextHint || 'AI Proofread';
     this.proofreadButton.style.background = '#4CAF50';
   }
 

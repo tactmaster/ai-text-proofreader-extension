@@ -123,13 +123,18 @@ textarea {
 
 .primary-btn, .secondary-btn {
     flex: 1;
-    padding: 10px 16px;
+    padding: 12px 16px;
     border: none;
     border-radius: 4px;
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .primary-btn {
@@ -490,4 +495,23 @@ footer {
 /* Import/Export buttons */
 .button-group button.secondary-btn:last-child {
     margin-left: 4px;
+}
+
+/* Icon-only button enhancements */
+.primary-btn[title], .secondary-btn[title] {
+    position: relative;
+}
+
+/* Ensure proper spacing for icon-only buttons */
+.button-group {
+    gap: 8px;
+    align-items: center;
+}
+
+/* Add website buttons specific styling */
+.add-website button {
+    padding: 8px 12px;
+    font-size: 14px;
+    min-width: auto;
+    min-height: auto;
 }
