@@ -9,7 +9,14 @@
 <body>
     <div class="container">
         <header>
-            <h1>🔍 AI Text Proofreader</h1>
+            <h1><svg width="20" height="20" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; margin-right: 8px;">
+              <circle cx="16" cy="16" r="15" fill="#4CAF50"/>
+              <text x="16" y="20" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="white">AI</text>
+              <circle cx="8" cy="8" r="1.5" fill="white" opacity="0.8"/>
+              <circle cx="24" cy="8" r="1.5" fill="white" opacity="0.8"/>
+              <circle cx="8" cy="24" r="1.5" fill="white" opacity="0.8"/>
+              <circle cx="24" cy="24" r="1.5" fill="white" opacity="0.8"/>
+            </svg>AI Text Proofreader</h1>
         </header>
 
         <div class="tabs">
@@ -26,8 +33,17 @@
             </div>
 
             <div class="button-group">
-                <button id="proofread-btn" class="primary-btn">🔍 Proofread Text</button>
-                <button id="suggestions-btn" class="secondary-btn">💡 Get Suggestions</button>
+                <button id="proofread-btn" class="primary-btn" title="Proofread Text">
+                    <svg width="16" height="16" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="16" cy="16" r="15" fill="currentColor"/>
+                      <text x="16" y="20" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="white">AI</text>
+                      <circle cx="8" cy="8" r="1.5" fill="white" opacity="0.8"/>
+                      <circle cx="24" cy="8" r="1.5" fill="white" opacity="0.8"/>
+                      <circle cx="8" cy="24" r="1.5" fill="white" opacity="0.8"/>
+                      <circle cx="24" cy="24" r="1.5" fill="white" opacity="0.8"/>
+                    </svg>
+                </button>
+                <button id="suggestions-btn" class="secondary-btn" title="Get Suggestions">💡</button>
             </div>
 
             <div id="loading" class="loading hidden">
@@ -39,8 +55,8 @@
                 <label>Result:</label>
                 <textarea id="output-text" rows="6" readonly></textarea>
                 <div class="button-group">
-                    <button id="copy-result" class="secondary-btn">📋 Copy Result</button>
-                    <button id="accept-changes" class="primary-btn">✅ Accept Changes</button>
+                    <button id="copy-result" class="secondary-btn" title="Copy Result">📋</button>
+                    <button id="accept-changes" class="primary-btn" title="Accept Changes">✅</button>
                 </div>
             </div>
 
@@ -63,7 +79,7 @@
                     </div>
                     <div class="add-website">
                         <input type="text" id="new-email-website" placeholder="e.g., mail.yahoo.com, protonmail.com">
-                        <button id="add-email-website" class="secondary-btn">+ Add</button>
+                        <button id="add-email-website" class="secondary-btn" title="Add Email Website">+</button>
                     </div>
                 </div>
 
@@ -74,7 +90,7 @@
                     </div>
                     <div class="add-website">
                         <input type="text" id="new-dev-website" placeholder="e.g., bitbucket.org, dev.azure.com">
-                        <button id="add-dev-website" class="secondary-btn">+ Add</button>
+                        <button id="add-dev-website" class="secondary-btn" title="Add Development Website">+</button>
                     </div>
                 </div>
 
@@ -85,7 +101,7 @@
                     </div>
                     <div class="add-website">
                         <input type="text" id="new-social-website" placeholder="e.g., instagram.com, tiktok.com">
-                        <button id="add-social-website" class="secondary-btn">+ Add</button>
+                        <button id="add-social-website" class="secondary-btn" title="Add Social Website">+</button>
                     </div>
                 </div>
 
@@ -96,7 +112,7 @@
                     </div>
                     <div class="add-website">
                         <input type="text" id="new-docs-website" placeholder="e.g., atlassian.net, gitbook.io">
-                        <button id="add-docs-website" class="secondary-btn">+ Add</button>
+                        <button id="add-docs-website" class="secondary-btn" title="Add Documentation Website">+</button>
                     </div>
                 </div>
             </div>
@@ -132,9 +148,9 @@
                 </div>
 
                 <div class="button-group">
-                    <button id="save-prompt" class="primary-btn">💾 Save Prompt</button>
-                    <button id="reset-prompt" class="secondary-btn">🔄 Reset to Default</button>
-                    <button id="preview-prompt" class="secondary-btn">👁️ Preview</button>
+                    <button id="save-prompt" class="primary-btn" title="Save Prompt">💾</button>
+                    <button id="reset-prompt" class="secondary-btn" title="Reset to Default">🔄</button>
+                    <button id="preview-prompt" class="secondary-btn" title="Preview">👁️</button>
                 </div>
 
                 <div id="prompt-preview" class="section hidden">
@@ -146,10 +162,10 @@
             </div>
 
             <div class="button-group">
-                <button id="save-context-settings" class="primary-btn">💾 Save All Context Settings</button>
-                <button id="reset-context-settings" class="secondary-btn">🔄 Reset All</button>
-                <button id="export-settings" class="secondary-btn">📤 Export Settings</button>
-                <button id="import-settings" class="secondary-btn">📥 Import Settings</button>
+                <button id="save-context-settings" class="primary-btn" title="Save All Context Settings">💾</button>
+                <button id="reset-context-settings" class="secondary-btn" title="Reset All">🔄</button>
+                <button id="export-settings" class="secondary-btn" title="Export Settings">📤</button>
+                <button id="import-settings" class="secondary-btn" title="Import Settings">📥</button>
             </div>
         </div>
 
@@ -192,20 +208,20 @@
                     <li>Start: <code>ollama serve</code></li>
                 </ol>
                 <p><strong>Note:</strong> The CORS environment variable is required for browser extensions.</p>
-                <button id="test-connection" class="secondary-btn">🔗 Test Connection</button>
+                <button id="test-connection" class="secondary-btn" title="Test Connection">🔗</button>
             </div>
 
             <div class="button-group">
-                <button id="save-settings" class="primary-btn">💾 Save Settings</button>
-                <button id="reset-settings" class="secondary-btn">🔄 Reset</button>
+                <button id="save-settings" class="primary-btn" title="Save Settings">💾</button>
+                <button id="reset-settings" class="secondary-btn" title="Reset">🔄</button>
             </div>
 
             <div class="section">
                 <h3>Debug Tools</h3>
-                <button id="show-debug" class="secondary-btn">🐛 Show Debug Info</button>
+                <button id="show-debug" class="secondary-btn" title="Show Debug Info">🐛</button>
                 <div id="debug-info" class="debug-container hidden">
                     <textarea id="debug-output" rows="6" readonly placeholder="Debug information will appear here..."></textarea>
-                    <button id="copy-debug" class="secondary-btn">📋 Copy Debug Info</button>
+                    <button id="copy-debug" class="secondary-btn" title="Copy Debug Info">📋</button>
                 </div>
             </div>
 

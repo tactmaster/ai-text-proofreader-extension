@@ -4,7 +4,7 @@ A powerful Chrome extension that uses AI/LLM technology to proofread and correct
 
 ## Features
 
-- 🔍 **AI-Powered Proofreading**: Automatic spelling and grammar correction using advanced LLMs
+- 🤖 **AI-Powered Proofreading**: Automatic spelling and grammar correction using advanced LLMs
 - 🏠 **Local LLM Support**: Use Ollama for privacy-focused, offline text correction
 - ☁️ **Cloud LLM Integration**: Support for OpenAI and custom API endpoints
 - 🎯 **Smart Text Detection**: Automatically detects text inputs and content-editable fields
@@ -46,7 +46,7 @@ For privacy and offline usage, set up Ollama:
 ### On Web Pages
 
 1. **Click on any text input** (textarea, input field, or content-editable element)
-2. **Click the "🔍 AI Proofread" button** that appears
+2. **Click the "AI" button** that appears
 3. **Or right-click** on the text field for more options:
    - Full Proofread: Automatically correct all text
    - Get Suggestions: Review suggestions before applying
