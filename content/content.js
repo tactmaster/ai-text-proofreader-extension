@@ -30,7 +30,15 @@ class TextBoxProofreader {
     
     // Get context hint for tooltip
     const contextHint = this.currentContext?.settings?.contextHint || 'AI Proofread';
-    this.proofreadButton.innerHTML = `🔍`;
+    // Using custom AI icon instead of magnifying glass
+    this.proofreadButton.innerHTML = `<svg width="16" height="16" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="16" cy="16" r="15" fill="currentColor"/>
+      <text x="16" y="20" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="white">AI</text>
+      <circle cx="8" cy="8" r="1.5" fill="white" opacity="0.8"/>
+      <circle cx="24" cy="8" r="1.5" fill="white" opacity="0.8"/>
+      <circle cx="8" cy="24" r="1.5" fill="white" opacity="0.8"/>
+      <circle cx="24" cy="24" r="1.5" fill="white" opacity="0.8"/>
+    </svg>`;
     this.proofreadButton.title = contextHint; // Tooltip
     
     this.proofreadButton.style.cssText = `
@@ -258,7 +266,14 @@ class TextBoxProofreader {
     const quickActions = document.createElement('div');
     quickActions.innerHTML = `
       <button id="ai-full-proofread" title="Proofread & Apply" style="display: inline-block; margin-right: 4px; margin-bottom: 4px; padding: 8px; border: 1px solid #ddd; border-radius: 50%; background: #4CAF50; color: white; cursor: pointer; font-size: 16px; width: 36px; height: 36px;">
-        🔍
+        <svg width="16" height="16" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="16" r="15" fill="currentColor"/>
+          <text x="16" y="20" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="white">AI</text>
+          <circle cx="8" cy="8" r="1.5" fill="white" opacity="0.8"/>
+          <circle cx="24" cy="8" r="1.5" fill="white" opacity="0.8"/>
+          <circle cx="8" cy="24" r="1.5" fill="white" opacity="0.8"/>
+          <circle cx="24" cy="24" r="1.5" fill="white" opacity="0.8"/>
+        </svg>
       </button>
       <button id="ai-get-suggestions" title="Get Suggestions Only" style="display: inline-block; margin-right: 4px; margin-bottom: 4px; padding: 8px; border: 1px solid #ddd; border-radius: 50%; background: #2196F3; color: white; cursor: pointer; font-size: 16px; width: 36px; height: 36px;">
         💡
@@ -507,7 +522,14 @@ class TextBoxProofreader {
   }
 
   hideLoadingState() {
-    this.proofreadButton.innerHTML = '🔍';
+    this.proofreadButton.innerHTML = `<svg width="16" height="16" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="16" cy="16" r="15" fill="currentColor"/>
+      <text x="16" y="20" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="white">AI</text>
+      <circle cx="8" cy="8" r="1.5" fill="white" opacity="0.8"/>
+      <circle cx="24" cy="8" r="1.5" fill="white" opacity="0.8"/>
+      <circle cx="8" cy="24" r="1.5" fill="white" opacity="0.8"/>
+      <circle cx="24" cy="24" r="1.5" fill="white" opacity="0.8"/>
+    </svg>`;
     this.proofreadButton.title = this.currentContext?.settings?.contextHint || 'AI Proofread';
     this.proofreadButton.style.background = '#4CAF50';
   }
