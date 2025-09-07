@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "AI Text Proofreader",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "An extension that uses AI/LLM to proofread and correct text in input fields",
   "permissions": [
     "activeTab",
