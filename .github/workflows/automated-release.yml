@@ -1,0 +1,279 @@
+name: Automated Release
+
+on:
+  push:
+    branches: [ release ]
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Release type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+        - patch
+        - minor
+        - major
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run tests
+      run: npm test
+      
+    - name: Get current version
+      id: current_version
+      run: |
+        CURRENT_VERSION=$(node -e "console.log(require('./manifest.json').version)")
+        echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+        echo "Current version: $CURRENT_VERSION"
+        
+    - name: Determine new version
+      id: new_version
+      run: |
+        CURRENT_VERSION="${{ steps.current_version.outputs.current_version }}"
+        RELEASE_TYPE="${{ github.event.inputs.release_type || 'patch' }}"
+        
+        # Parse current version
+        IFS='.' read -ra VERSION_PARTS <<< "$CURRENT_VERSION"
+        MAJOR=${VERSION_PARTS[0]}
+        MINOR=${VERSION_PARTS[1]}
+        PATCH=${VERSION_PARTS[2]}
+        
+        # Increment version based on release type
+        case $RELEASE_TYPE in
+          major)
+            MAJOR=$((MAJOR + 1))
+            MINOR=0
+            PATCH=0
+            ;;
+          minor)
+            MINOR=$((MINOR + 1))
+            PATCH=0
+            ;;
+          patch)
+            PATCH=$((PATCH + 1))
+            ;;
+        esac
+        
+        NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+        echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+        echo "New version: $NEW_VERSION"
+        
+    - name: Update version in files
+      run: |
+        NEW_VERSION="${{ steps.new_version.outputs.new_version }}"
+        
+        # Update manifest.json
+        node -e "
+          const fs = require('fs');
+          const manifest = JSON.parse(fs.readFileSync('manifest.json', 'utf8'));
+          manifest.version = '$NEW_VERSION';
+          fs.writeFileSync('manifest.json', JSON.stringify(manifest, null, 2) + '\n');
+        "
+        
+        # Update package.json
+        node -e "
+          const fs = require('fs');
+          const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+          pkg.version = '$NEW_VERSION';
+          fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+        "
+        
+        echo "✅ Updated version to $NEW_VERSION in manifest.json and package.json"
+        
+    - name: Generate changelog
+      id: changelog
+      run: |
+        NEW_VERSION="${{ steps.new_version.outputs.new_version }}"
+        CURRENT_VERSION="${{ steps.current_version.outputs.current_version }}"
+        
+        # Generate changelog from git commits
+        CHANGELOG=$(git log --pretty=format:"- %s" v$CURRENT_VERSION..HEAD 2>/dev/null || git log --pretty=format:"- %s" --max-count=10)
+        
+        # Create release notes
+        cat > RELEASE_NOTES.md << EOF
+        # AI Text Proofreader v$NEW_VERSION
+        
+        ## What's Changed
+        
+        $CHANGELOG
+        
+        ## Features
+        
+        - 🤖 **21 AI Providers**: Support for local (Ollama, llama.cpp, LM Studio, Jan) and cloud providers (OpenAI, Anthropic, Google, Mistral, Groq, and more)
+        - 🎯 **Context-Aware Proofreading**: Automatically adapts suggestions based on website context (Email, GitHub, etc.)
+        - 📝 **Formatting Preservation**: Maintains newlines, bullet points, code blocks, and other formatting
+        - ⚡ **Smart UI Positioning**: Intelligent button placement that adapts to screen edges
+        - 🔧 **Customizable Settings**: Configure AI providers, models, and context-specific prompts
+        - 🛡️ **Privacy First**: Option to use local AI models for complete privacy
+        
+        ## Installation
+        
+        ### Chrome/Edge (Developer Mode)
+        1. Download the \`ai-text-proofreader-v$NEW_VERSION.zip\` file below
+        2. Extract the ZIP file to a folder
+        3. Open \`chrome://extensions/\` or \`edge://extensions/\`
+        4. Enable "Developer mode" (toggle in top-right)
+        5. Click "Load unpacked" and select the extracted folder
+        
+        ### Verification
+        Verify download integrity using the provided SHA256 checksums in \`checksums.txt\`
+        
+        ## Supported AI Providers
+        
+        ### Local/Self-Hosted (5 providers)
+        - Ollama (default local provider)
+        - llama.cpp Server
+        - LM Studio
+        - Jan AI
+        - Custom Ollama instances
+        
+        ### Commercial APIs (8 providers)
+        - OpenAI (GPT-3.5, GPT-4)
+        - Anthropic Claude
+        - Google Gemini
+        - Mistral AI
+        - Groq (fast inference)
+        - Together AI
+        - Perplexity
+        - Cohere
+        
+        ### Open Source APIs (7 providers)
+        - Hugging Face
+        - Replicate
+        - Fireworks AI
+        - DeepInfra
+        - Anyscale
+        - OpenRouter
+        - Novita AI
+        
+        ### Custom
+        - User-defined endpoints
+        
+        **Full Changelog**: https://github.com/${{ github.repository }}/compare/v$CURRENT_VERSION...v$NEW_VERSION
+        EOF
+        
+        echo "changelog_file=RELEASE_NOTES.md" >> $GITHUB_OUTPUT
+        
+    - name: Commit version changes
+      run: |
+        NEW_VERSION="${{ steps.new_version.outputs.new_version }}"
+        
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        
+        git add manifest.json package.json
+        git commit -m "chore: bump version to v$NEW_VERSION"
+        
+    - name: Create and push tag
+      run: |
+        NEW_VERSION="${{ steps.new_version.outputs.new_version }}"
+        
+        git tag -a "v$NEW_VERSION" -m "Release v$NEW_VERSION"
+        git push origin "v$NEW_VERSION"
+        
+    - name: Push version changes to release branch
+      run: |
+        git push origin release
+        
+    - name: Create extension package
+      run: |
+        NEW_VERSION="${{ steps.new_version.outputs.new_version }}"
+        
+        echo "📦 Creating extension package..."
+        
+        # Create a clean build directory
+        mkdir -p build/ai-text-proofreader-v$NEW_VERSION
+        
+        # Copy extension files (exclude development files)
+        cp -r background build/ai-text-proofreader-v$NEW_VERSION/
+        cp -r content build/ai-text-proofreader-v$NEW_VERSION/
+        cp -r popup build/ai-text-proofreader-v$NEW_VERSION/
+        cp manifest.json build/ai-text-proofreader-v$NEW_VERSION/
+        cp README.md build/ai-text-proofreader-v$NEW_VERSION/
+        
+        # Copy documentation if it exists
+        if [ -d "docs" ]; then
+          cp -r docs build/ai-text-proofreader-v$NEW_VERSION/
+        fi
+        
+        # Create zip file for Chrome Web Store
+        cd build
+        zip -r "ai-text-proofreader-v$NEW_VERSION.zip" "ai-text-proofreader-v$NEW_VERSION/"
+        
+        echo "✅ Package created: ai-text-proofreader-v$NEW_VERSION.zip"
+        
+    - name: Generate checksums
+      run: |
+        NEW_VERSION="${{ steps.new_version.outputs.new_version }}"
+        cd build
+        sha256sum "ai-text-proofreader-v$NEW_VERSION.zip" > checksums.txt
+        echo "📄 Checksums generated:"
+        cat checksums.txt
+        
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: v${{ steps.new_version.outputs.new_version }}
+        name: AI Text Proofreader v${{ steps.new_version.outputs.new_version }}
+        body_path: ${{ steps.changelog.outputs.changelog_file }}
+        draft: false
+        prerelease: false
+        files: |
+          build/ai-text-proofreader-v${{ steps.new_version.outputs.new_version }}.zip
+          build/checksums.txt
+        token: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Create Pull Request to main
+      uses: peter-evans/create-pull-request@v6
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        branch: release/v${{ steps.new_version.outputs.new_version }}
+        base: main
+        title: "chore: release v${{ steps.new_version.outputs.new_version }}"
+        body: |
+          ## Release v${{ steps.new_version.outputs.new_version }}
+          
+          This PR merges the release changes back to main branch.
+          
+          ### Changes
+          - Bumped version to v${{ steps.new_version.outputs.new_version }}
+          - Created release tag
+          - Generated release packages
+          
+          ### Release
+          - **Release**: https://github.com/${{ github.repository }}/releases/tag/v${{ steps.new_version.outputs.new_version }}
+          - **Download**: ai-text-proofreader-v${{ steps.new_version.outputs.new_version }}.zip
+          
+          This PR should be merged to keep main branch up to date with releases.
+        delete-branch: true
+        
+    - name: Summary
+      run: |
+        NEW_VERSION="${{ steps.new_version.outputs.new_version }}"
+        echo "🎉 Release v$NEW_VERSION created successfully!"
+        echo "📦 Package: ai-text-proofreader-v$NEW_VERSION.zip"
+        echo "🔗 Release: https://github.com/${{ github.repository }}/releases/tag/v$NEW_VERSION"
+        echo "📥 Pull Request created to merge back to main"

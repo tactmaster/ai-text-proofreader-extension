@@ -1,0 +1,119 @@
+name: Initialize Release Branch
+
+on:
+  workflow_dispatch:
+    inputs:
+      create_release_branch:
+        description: 'Create release branch from main'
+        required: false
+        default: 'true'
+
+permissions:
+  contents: write
+
+jobs:
+  init-release-branch:
+    runs-on: ubuntu-latest
+    if: github.event.inputs.create_release_branch == 'true'
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Create release branch
+      run: |
+        # Check if release branch already exists
+        if git show-ref --verify --quiet refs/remotes/origin/release; then
+          echo "⚠️ Release branch already exists"
+          git checkout release
+          git pull origin release
+          echo "✅ Switched to existing release branch"
+        else
+          echo "📝 Creating new release branch from main"
+          git checkout -b release
+          git push -u origin release
+          echo "✅ Created and pushed release branch"
+        fi
+        
+        # Verify current branch
+        echo "Current branch: $(git branch --show-current)"
+        
+    - name: Setup release branch info
+      run: |
+        cat > RELEASE_BRANCH_INFO.md << 'EOF'
+        # Release Branch Setup
+        
+        ## Purpose
+        The `release` branch is used for creating automated releases of the AI Text Proofreader extension.
+        
+        ## Workflow
+        1. **Development** happens on feature branches merged to `main`
+        2. **Releases** are created by pushing changes to the `release` branch
+        3. **Automated Release** workflow triggers on push to `release` branch
+        4. **Version bumping** happens automatically
+        5. **Pull Request** is created to merge version changes back to `main`
+        
+        ## Usage
+        
+        ### Creating a Release
+        1. Merge your changes to `main` first
+        2. Switch to release branch: `git checkout release`
+        3. Merge latest from main: `git merge main`
+        4. Push to trigger release: `git push origin release`
+        5. The automated release workflow will:
+           - Run tests
+           - Bump version (patch by default)
+           - Create git tag
+           - Build extension package
+           - Create GitHub release
+           - Create PR to merge version changes back to main
+        
+        ### Manual Release Type
+        You can also trigger a manual release with specific version bump:
+        1. Go to Actions tab in GitHub
+        2. Select "Automated Release" workflow
+        3. Click "Run workflow"
+        4. Choose release type: patch, minor, or major
+        
+        ## Branch Protection
+        - `main` branch is protected and requires PR reviews
+        - `release` branch allows direct pushes for automated releases
+        - All releases create PRs back to main for version sync
+        
+        ## Files Modified During Release
+        - `manifest.json` - Extension version
+        - `package.json` - Package version
+        - Git tags created for each release
+        
+        EOF
+        
+        # Add the info file if it doesn't exist
+        if [ ! -f "RELEASE_BRANCH_INFO.md" ]; then
+          git add RELEASE_BRANCH_INFO.md
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git commit -m "docs: add release branch information"
+          git push origin release
+          echo "✅ Added release branch documentation"
+        else
+          echo "ℹ️ Release branch documentation already exists"
+        fi
+        
+    - name: Summary
+      run: |
+        echo "🎉 Release branch setup complete!"
+        echo ""
+        echo "## Next Steps:"
+        echo "1. Merge your latest changes to main branch"
+        echo "2. Push to release branch to create a new release:"
+        echo "   git checkout release"
+        echo "   git merge main"
+        echo "   git push origin release"
+        echo ""
+        echo "3. Or use manual workflow dispatch for specific version bump"
+        echo ""
+        echo "## Branch Protection Setup:"
+        echo "Run the 'Setup Branch Protection' workflow to protect main branch"
