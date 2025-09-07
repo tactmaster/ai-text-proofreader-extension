@@ -150,12 +150,97 @@ class PopupController {
     document.getElementById('openai-settings').classList.add('hidden');
     document.getElementById('custom-settings').classList.add('hidden');
 
-    // Show relevant settings
-    if (provider === 'openai') {
+    // Show relevant settings based on provider type
+    const commercialAPIs = ['openai', 'anthropic', 'google', 'cohere', 'mistral', 'groq', 'together', 'replicate', 'huggingface'];
+    const openSourceAPIs = ['perplexity', 'deepseek', 'fireworks', 'anyscale', 'deepinfra'];
+    const customAPIs = ['custom', 'openrouter', 'llamacpp', 'textgen', 'koboldcpp', 'tabbyapi'];
+    
+    if (commercialAPIs.includes(provider) || openSourceAPIs.includes(provider)) {
       document.getElementById('openai-settings').classList.remove('hidden');
-    } else if (provider === 'custom') {
+      // Update label and placeholder based on provider
+      this.updateAPIKeyLabel(provider);
+    } else if (customAPIs.includes(provider)) {
       document.getElementById('custom-settings').classList.remove('hidden');
+      // Update endpoint placeholder based on provider
+      this.updateEndpointPlaceholder(provider);
     }
+    
+    // Update model suggestions
+    this.updateModelSuggestions(provider);
+  }
+
+  updateAPIKeyLabel(provider) {
+    const label = document.querySelector('#openai-settings label[for="api-key-input"]');
+    const input = document.getElementById('api-key-input');
+    
+    const providerConfig = {
+      'openai': { label: 'OpenAI API Key:', placeholder: 'sk-...' },
+      'anthropic': { label: 'Anthropic API Key:', placeholder: 'sk-ant-...' },
+      'google': { label: 'Google API Key:', placeholder: 'AIza...' },
+      'cohere': { label: 'Cohere API Key:', placeholder: 'co_...' },
+      'mistral': { label: 'Mistral API Key:', placeholder: 'mis_...' },
+      'groq': { label: 'Groq API Key:', placeholder: 'gsk_...' },
+      'together': { label: 'Together AI API Key:', placeholder: 'sk-...' },
+      'replicate': { label: 'Replicate API Token:', placeholder: 'r8_...' },
+      'huggingface': { label: 'Hugging Face Token:', placeholder: 'hf_...' },
+      'perplexity': { label: 'Perplexity API Key:', placeholder: 'pplx-...' },
+      'deepseek': { label: 'DeepSeek API Key:', placeholder: 'sk-...' },
+      'fireworks': { label: 'Fireworks API Key:', placeholder: 'fw_...' },
+      'anyscale': { label: 'Anyscale API Key:', placeholder: 'esecret_...' },
+      'deepinfra': { label: 'DeepInfra API Key:', placeholder: 'di_...' }
+    };
+    
+    const config = providerConfig[provider] || { label: 'API Key:', placeholder: 'Enter your API key' };
+    label.textContent = config.label;
+    input.placeholder = config.placeholder;
+  }
+
+  updateEndpointPlaceholder(provider) {
+    const input = document.getElementById('custom-endpoint-input');
+    
+    const endpointConfig = {
+      'llamacpp': 'http://localhost:8080/v1',
+      'textgen': 'http://localhost:5000/v1',
+      'koboldcpp': 'http://localhost:5001/v1',
+      'tabbyapi': 'http://localhost:5000/v1',
+      'openrouter': 'https://openrouter.ai/api/v1',
+      'custom': 'https://your-api-endpoint.com/v1'
+    };
+    
+    input.placeholder = endpointConfig[provider] || 'https://your-api-endpoint.com/v1';
+  }
+
+  updateModelSuggestions(provider) {
+    const input = document.getElementById('model-input');
+    const small = input.nextElementSibling;
+    
+    const modelConfig = {
+      'local': { placeholder: 'llama3.2, qwen2.5, etc.', hint: 'Ollama model name (run "ollama list" to see available models)' },
+      'openai': { placeholder: 'gpt-4o, gpt-4o-mini, gpt-3.5-turbo', hint: 'OpenAI model ID' },
+      'anthropic': { placeholder: 'claude-3-5-sonnet-20241022, claude-3-haiku-20240307', hint: 'Anthropic model name' },
+      'google': { placeholder: 'gemini-1.5-pro, gemini-1.5-flash', hint: 'Google Gemini model' },
+      'cohere': { placeholder: 'command-r-plus, command-r', hint: 'Cohere model name' },
+      'mistral': { placeholder: 'mistral-large-latest, mistral-small-latest', hint: 'Mistral AI model' },
+      'groq': { placeholder: 'llama-3.1-70b-versatile, mixtral-8x7b-32768', hint: 'Groq model name' },
+      'together': { placeholder: 'meta-llama/Llama-3-70b-chat-hf', hint: 'Together AI model path' },
+      'replicate': { placeholder: 'meta/llama-2-70b-chat', hint: 'Replicate model name' },
+      'huggingface': { placeholder: 'microsoft/DialoGPT-large', hint: 'Hugging Face model name' },
+      'perplexity': { placeholder: 'llama-3.1-sonar-large-128k-online', hint: 'Perplexity model name' },
+      'deepseek': { placeholder: 'deepseek-chat', hint: 'DeepSeek model name' },
+      'fireworks': { placeholder: 'accounts/fireworks/models/llama-v3-70b-instruct', hint: 'Fireworks model path' },
+      'anyscale': { placeholder: 'meta-llama/Llama-2-70b-chat-hf', hint: 'Anyscale model name' },
+      'deepinfra': { placeholder: 'meta-llama/Llama-2-70b-chat-hf', hint: 'DeepInfra model name' },
+      'llamacpp': { placeholder: 'model-name', hint: 'Model loaded in llama.cpp server' },
+      'textgen': { placeholder: 'model-name', hint: 'Model loaded in Text Generation WebUI' },
+      'koboldcpp': { placeholder: 'model-name', hint: 'Model loaded in KoboldCpp' },
+      'tabbyapi': { placeholder: 'model-name', hint: 'Model loaded in TabbyAPI' },
+      'openrouter': { placeholder: 'anthropic/claude-3.5-sonnet', hint: 'OpenRouter model path' },
+      'custom': { placeholder: 'model-name', hint: 'Custom endpoint model name' }
+    };
+    
+    const config = modelConfig[provider] || { placeholder: 'model-name', hint: 'Model name for your provider' };
+    input.placeholder = config.placeholder;
+    small.textContent = config.hint;
   }
 
   async proofreadText() {

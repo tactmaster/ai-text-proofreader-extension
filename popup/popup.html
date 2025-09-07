@@ -174,9 +174,35 @@
             <div class="section">
                 <label for="provider-select">LLM Provider:</label>
                 <select id="provider-select">
-                    <option value="local">Local LLM (Ollama)</option>
-                    <option value="openai">OpenAI</option>
-                    <option value="custom">Custom Endpoint</option>
+                    <optgroup label="Local/Self-Hosted">
+                        <option value="local">Local LLM (Ollama)</option>
+                        <option value="llamacpp">llama.cpp Server</option>
+                        <option value="textgen">Text Generation WebUI</option>
+                        <option value="koboldcpp">KoboldCpp</option>
+                        <option value="tabbyapi">TabbyAPI</option>
+                    </optgroup>
+                    <optgroup label="Commercial APIs">
+                        <option value="openai">OpenAI (GPT-4, GPT-3.5)</option>
+                        <option value="anthropic">Anthropic (Claude)</option>
+                        <option value="google">Google (Gemini/Bard)</option>
+                        <option value="cohere">Cohere</option>
+                        <option value="mistral">Mistral AI</option>
+                        <option value="groq">Groq</option>
+                        <option value="together">Together AI</option>
+                        <option value="replicate">Replicate</option>
+                        <option value="huggingface">Hugging Face Inference</option>
+                    </optgroup>
+                    <optgroup label="Open Source APIs">
+                        <option value="perplexity">Perplexity AI</option>
+                        <option value="deepseek">DeepSeek</option>
+                        <option value="fireworks">Fireworks AI</option>
+                        <option value="anyscale">Anyscale</option>
+                        <option value="deepinfra">DeepInfra</option>
+                    </optgroup>
+                    <optgroup label="Custom">
+                        <option value="custom">Custom Endpoint</option>
+                        <option value="openrouter">OpenRouter</option>
+                    </optgroup>
                 </select>
             </div>
 

@@ -3,8 +3,167 @@ class LLMProofreader {
   constructor() {
     this.localEndpoint = 'http://127.0.0.1:11434/api/generate'; // Use 127.0.0.1 instead of localhost for better Chrome extension compatibility
     this.openAIEndpoint = 'https://api.openai.com/v1/chat/completions';
+    
+    // Comprehensive provider configurations
+    this.providerConfigs = {
+      // Local/Self-hosted providers
+      'local': {
+        name: 'Ollama (Local)',
+        isLocal: true,
+        defaultEndpoint: 'http://127.0.0.1:11434/api/generate',
+        defaultModel: 'llama2',
+        apiFormat: 'ollama'
+      },
+      'ollama': {
+        name: 'Ollama',
+        isLocal: true,
+        defaultEndpoint: 'http://127.0.0.1:11434/api/generate',
+        defaultModel: 'llama2',
+        apiFormat: 'ollama'
+      },
+      'llama-cpp': {
+        name: 'llama.cpp Server',
+        isLocal: true,
+        defaultEndpoint: 'http://localhost:8080/v1/chat/completions',
+        defaultModel: 'model',
+        apiFormat: 'openai'
+      },
+      'lm-studio': {
+        name: 'LM Studio',
+        isLocal: true,
+        defaultEndpoint: 'http://localhost:1234/v1/chat/completions',
+        defaultModel: 'local-model',
+        apiFormat: 'openai'
+      },
+      'jan': {
+        name: 'Jan',
+        isLocal: true,
+        defaultEndpoint: 'http://localhost:1337/v1/chat/completions',
+        defaultModel: 'trinity-v1',
+        apiFormat: 'openai'
+      },
+
+      // Commercial API providers
+      'openai': {
+        name: 'OpenAI',
+        isLocal: false,
+        defaultEndpoint: 'https://api.openai.com/v1/chat/completions',
+        defaultModel: 'gpt-3.5-turbo',
+        apiFormat: 'openai'
+      },
+      'anthropic': {
+        name: 'Anthropic Claude',
+        isLocal: false,
+        defaultEndpoint: 'https://api.anthropic.com/v1/messages',
+        defaultModel: 'claude-3-haiku-20240307',
+        apiFormat: 'anthropic'
+      },
+      'google': {
+        name: 'Google Gemini',
+        isLocal: false,
+        defaultEndpoint: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent',
+        defaultModel: 'gemini-pro',
+        apiFormat: 'google'
+      },
+      'mistral': {
+        name: 'Mistral AI',
+        isLocal: false,
+        defaultEndpoint: 'https://api.mistral.ai/v1/chat/completions',
+        defaultModel: 'mistral-tiny',
+        apiFormat: 'openai'
+      },
+      'groq': {
+        name: 'Groq',
+        isLocal: false,
+        defaultEndpoint: 'https://api.groq.com/openai/v1/chat/completions',
+        defaultModel: 'llama2-70b-4096',
+        apiFormat: 'openai'
+      },
+      'together': {
+        name: 'Together AI',
+        isLocal: false,
+        defaultEndpoint: 'https://api.together.xyz/v1/chat/completions',
+        defaultModel: 'meta-llama/Llama-2-7b-chat-hf',
+        apiFormat: 'openai'
+      },
+      'perplexity': {
+        name: 'Perplexity',
+        isLocal: false,
+        defaultEndpoint: 'https://api.perplexity.ai/chat/completions',
+        defaultModel: 'llama-2-70b-chat',
+        apiFormat: 'openai'
+      },
+      'cohere': {
+        name: 'Cohere',
+        isLocal: false,
+        defaultEndpoint: 'https://api.cohere.ai/v1/generate',
+        defaultModel: 'command',
+        apiFormat: 'cohere'
+      },
+
+      // Open Source API providers
+      'huggingface': {
+        name: 'Hugging Face',
+        isLocal: false,
+        defaultEndpoint: 'https://api-inference.huggingface.co/models',
+        defaultModel: 'microsoft/DialoGPT-medium',
+        apiFormat: 'huggingface'
+      },
+      'replicate': {
+        name: 'Replicate',
+        isLocal: false,
+        defaultEndpoint: 'https://api.replicate.com/v1/predictions',
+        defaultModel: 'meta/llama-2-7b-chat',
+        apiFormat: 'replicate'
+      },
+      'fireworks': {
+        name: 'Fireworks AI',
+        isLocal: false,
+        defaultEndpoint: 'https://api.fireworks.ai/inference/v1/chat/completions',
+        defaultModel: 'accounts/fireworks/models/llama-v2-7b-chat',
+        apiFormat: 'openai'
+      },
+      'deepinfra': {
+        name: 'DeepInfra',
+        isLocal: false,
+        defaultEndpoint: 'https://api.deepinfra.com/v1/openai/chat/completions',
+        defaultModel: 'meta-llama/Llama-2-7b-chat-hf',
+        apiFormat: 'openai'
+      },
+      'anyscale': {
+        name: 'Anyscale',
+        isLocal: false,
+        defaultEndpoint: 'https://api.endpoints.anyscale.com/v1/chat/completions',
+        defaultModel: 'meta-llama/Llama-2-7b-chat-hf',
+        apiFormat: 'openai'
+      },
+      'openrouter': {
+        name: 'OpenRouter',
+        isLocal: false,
+        defaultEndpoint: 'https://openrouter.ai/api/v1/chat/completions',
+        defaultModel: 'openai/gpt-3.5-turbo',
+        apiFormat: 'openai'
+      },
+      'novita': {
+        name: 'Novita AI',
+        isLocal: false,
+        defaultEndpoint: 'https://api.novita.ai/v3/openai/chat/completions',
+        defaultModel: 'gryphe/mythomax-l2-13b',
+        apiFormat: 'openai'
+      },
+
+      // Custom endpoint
+      'custom': {
+        name: 'Custom Endpoint',
+        isLocal: false,
+        defaultEndpoint: '',
+        defaultModel: '',
+        apiFormat: 'openai'
+      }
+    };
+    
     this.settings = {
-      provider: 'local', // 'local', 'openai', 'custom'
+      provider: 'local', // Provider key from providerConfigs
       model: 'llama2', // default local model
       apiKey: '',
       customEndpoint: ''
@@ -284,6 +443,226 @@ class LLMProofreader {
     await chrome.storage.sync.set({ llmSettings: this.settings });
   }
 
+  async queryProvider(prompt) {
+    const config = this.getProviderConfig(this.settings.provider);
+    if (!config) {
+      throw new Error(`Unknown provider: ${this.settings.provider}`);
+    }
+
+    console.log(`[DEBUG] Using ${config.name} provider`);
+
+    if (config.isLocal) {
+      return await this.queryLocalProvider(prompt, config);
+    } else {
+      return await this.queryRemoteProvider(prompt, config);
+    }
+  }
+
+  async queryLocalProvider(prompt, config) {
+    const endpoint = this.settings.customEndpoint || config.defaultEndpoint;
+    const model = this.settings.model || config.defaultModel;
+    
+    console.log(`[DEBUG] Local provider endpoint: ${endpoint}, model: ${model}`);
+    
+    let requestBody, response;
+    
+    if (config.apiFormat === 'ollama') {
+      // Ollama format
+      requestBody = {
+        model: model,
+        prompt: prompt,
+        stream: false,
+        options: {
+          temperature: 0.1
+        }
+      };
+    } else {
+      // OpenAI-compatible format for other local providers
+      requestBody = {
+        model: model,
+        messages: [
+          { role: 'user', content: prompt }
+        ],
+        temperature: 0.1,
+        max_tokens: 2000
+      };
+    }
+
+    response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(requestBody)
+    });
+
+    if (!response.ok) {
+      const errorBody = await response.text();
+      throw new Error(`Local LLM request failed: ${response.status} ${response.statusText}. ${errorBody}`);
+    }
+
+    const data = await response.json();
+    
+    if (config.apiFormat === 'ollama') {
+      return data.response || '';
+    } else {
+      return data.choices?.[0]?.message?.content || data.text || '';
+    }
+  }
+
+  async queryRemoteProvider(prompt, config) {
+    if (!this.settings.apiKey) {
+      throw new Error(`API key required for ${config.name}`);
+    }
+
+    const endpoint = this.settings.customEndpoint || config.defaultEndpoint;
+    const model = this.settings.model || config.defaultModel;
+    
+    console.log(`[DEBUG] Remote provider: ${config.name}, endpoint: ${endpoint}, model: ${model}`);
+
+    let requestBody, headers;
+
+    if (config.apiFormat === 'openai') {
+      headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.settings.apiKey}`
+      };
+      requestBody = {
+        model: model,
+        messages: [
+          { role: 'user', content: prompt }
+        ],
+        temperature: 0.1,
+        max_tokens: 2000
+      };
+    } else if (config.apiFormat === 'anthropic') {
+      headers = {
+        'Content-Type': 'application/json',
+        'x-api-key': this.settings.apiKey,
+        'anthropic-version': '2023-06-01'
+      };
+      requestBody = {
+        model: model,
+        max_tokens: 2000,
+        messages: [
+          { role: 'user', content: prompt }
+        ]
+      };
+    } else if (config.apiFormat === 'google') {
+      const url = `${endpoint}?key=${this.settings.apiKey}`;
+      headers = {
+        'Content-Type': 'application/json'
+      };
+      requestBody = {
+        contents: [
+          {
+            parts: [
+              { text: prompt }
+            ]
+          }
+        ],
+        generationConfig: {
+          temperature: 0.1,
+          maxOutputTokens: 2000
+        }
+      };
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify(requestBody)
+      });
+      
+      if (!response.ok) {
+        const errorBody = await response.text();
+        throw new Error(`${config.name} request failed: ${response.status} ${response.statusText}. ${errorBody}`);
+      }
+      
+      const data = await response.json();
+      return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    } else if (config.apiFormat === 'cohere') {
+      headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.settings.apiKey}`
+      };
+      requestBody = {
+        model: model,
+        prompt: prompt,
+        max_tokens: 2000,
+        temperature: 0.1
+      };
+    } else if (config.apiFormat === 'huggingface') {
+      headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.settings.apiKey}`
+      };
+      requestBody = {
+        inputs: prompt,
+        parameters: {
+          max_new_tokens: 2000,
+          temperature: 0.1
+        }
+      };
+    } else if (config.apiFormat === 'replicate') {
+      headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Token ${this.settings.apiKey}`
+      };
+      requestBody = {
+        version: model,
+        input: {
+          prompt: prompt,
+          max_length: 2000,
+          temperature: 0.1
+        }
+      };
+    } else {
+      // Default to OpenAI format for unknown providers
+      headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.settings.apiKey}`
+      };
+      requestBody = {
+        model: model,
+        messages: [
+          { role: 'user', content: prompt }
+        ],
+        temperature: 0.1,
+        max_tokens: 2000
+      };
+    }
+
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify(requestBody)
+    });
+
+    if (!response.ok) {
+      const errorBody = await response.text();
+      throw new Error(`${config.name} request failed: ${response.status} ${response.statusText}. ${errorBody}`);
+    }
+
+    const data = await response.json();
+    
+    if (config.apiFormat === 'anthropic') {
+      return data.content?.[0]?.text || '';
+    } else if (config.apiFormat === 'cohere') {
+      return data.generations?.[0]?.text || '';
+    } else if (config.apiFormat === 'huggingface') {
+      return Array.isArray(data) ? data[0]?.generated_text || '' : data.generated_text || '';
+    } else if (config.apiFormat === 'replicate') {
+      return data.output?.join('') || '';
+    } else {
+      // OpenAI and OpenAI-compatible formats
+      return data.choices?.[0]?.message?.content || data.response || data.text || '';
+    }
+  }
+
+  getProviderConfig(provider) {
+    return this.providerConfigs[provider] || null;
+  }
+
   async proofreadText(text) {
     console.log(`[DEBUG] Starting proofreading with provider: ${this.settings.provider}`);
     console.log(`[DEBUG] Settings:`, { 
@@ -301,21 +680,7 @@ INPUT TEXT:
 OUTPUT (corrected text only):`;
 
     try {
-      let response;
-      
-      if (this.settings.provider === 'local') {
-        console.log(`[DEBUG] Using local LLM (Ollama)`);
-        response = await this.queryLocalLLM(prompt);
-      } else if (this.settings.provider === 'openai') {
-        console.log(`[DEBUG] Using OpenAI`);
-        response = await this.queryOpenAI(prompt);
-      } else if (this.settings.provider === 'custom') {
-        console.log(`[DEBUG] Using custom endpoint`);
-        response = await this.queryCustomEndpoint(prompt);
-      } else {
-        throw new Error(`Unknown provider: ${this.settings.provider}. Must be 'local', 'openai', or 'custom'`);
-      }
-      
+      const response = await this.queryProvider(prompt);
       console.log(`[DEBUG] Successfully received response, length: ${response?.length || 0}`);
       return this.cleanResponse(response);
     } catch (error) {
@@ -659,20 +1024,7 @@ Quick test: Visit http://127.0.0.1:11434 in your browser`);
     console.log(`[DEBUG] Context:`, context);
     
     try {
-      let response;
-      
-      if (this.settings.provider === 'local') {
-        console.log(`[DEBUG] Using local LLM (Ollama) with context`);
-        response = await this.queryLocalLLM(context.prompt);
-      } else if (this.settings.provider === 'openai') {
-        console.log(`[DEBUG] Using OpenAI with context`);
-        response = await this.queryOpenAI(context.prompt);
-      } else if (this.settings.provider === 'custom') {
-        console.log(`[DEBUG] Using custom endpoint with context`);
-        response = await this.queryCustomEndpoint(context.prompt);
-      } else {
-        throw new Error(`Unknown provider: ${this.settings.provider}`);
-      }
+      const response = await this.queryProvider(context.prompt);
       
       console.log(`[DEBUG] Context-aware proofreading completed`);
       return this.cleanResponse(response);
@@ -696,17 +1048,7 @@ Quick test: Visit http://127.0.0.1:11434 in your browser`);
     );
     
     try {
-      let response;
-      
-      if (this.settings.provider === 'local') {
-        response = await this.queryLocalLLM(suggestionPrompt);
-      } else if (this.settings.provider === 'openai') {
-        response = await this.queryOpenAI(suggestionPrompt);
-      } else if (this.settings.provider === 'custom') {
-        response = await this.queryCustomEndpoint(suggestionPrompt);
-      } else {
-        throw new Error(`Unknown provider: ${this.settings.provider}`);
-      }
+      const response = await this.queryProvider(suggestionPrompt);
       
       // Parse suggestions from response
       const suggestions = this.parseSuggestions(response, text);
