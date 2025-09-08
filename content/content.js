@@ -548,9 +548,10 @@ class TextBoxProofreader {
       }
     } catch (error) {
       this.showErrorMessage('Extension error: ' + error.message);
+    } finally {
+      // Always hide loading state when done (success or error)
+      this.hideLoadingState();
     }
-
-    this.hideLoadingState();
   }
 
   async getSuggestions() {
@@ -601,9 +602,10 @@ class TextBoxProofreader {
       }
     } catch (error) {
       this.showErrorMessage('Extension error: ' + error.message);
+    } finally {
+      // Always hide loading state when done (success or error)
+      this.hideLoadingState();
     }
-
-    this.hideLoadingState();
   }
 
   getElementText(element) {
@@ -701,22 +703,78 @@ class TextBoxProofreader {
   }
 
   showLoadingState() {
-    this.proofreadButton.innerHTML = '⏳';
-    this.proofreadButton.title = 'Processing...';
-    this.proofreadButton.style.background = '#FF9800';
+    // Create animated loading icon with AI theme
+    this.proofreadButton.innerHTML = `
+      <svg width="20" height="20" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="loadingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#FF9800"/>
+            <stop offset="50%" style="stop-color:#FF5722"/>
+            <stop offset="100%" style="stop-color:#F44336"/>
+          </linearGradient>
+        </defs>
+        <circle cx="16" cy="16" r="15" fill="url(#loadingGrad)" stroke="white" stroke-width="1">
+          <animate attributeName="opacity" values="0.5;1;0.5" dur="1.5s" repeatCount="indefinite"/>
+        </circle>
+        <text x="16" y="20" font-family="Arial, sans-serif" font-size="10" font-weight="bold" text-anchor="middle" fill="white">AI</text>
+        <circle cx="8" cy="8" r="1" fill="white" opacity="0.8">
+          <animate attributeName="r" values="1;2;1" dur="1s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="24" cy="8" r="1" fill="white" opacity="0.8">
+          <animate attributeName="r" values="1;2;1" dur="1s" begin="0.3s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="16" cy="6" r="1" fill="white" opacity="0.8">
+          <animate attributeName="r" values="1;2;1" dur="1s" begin="0.6s" repeatCount="indefinite"/>
+        </circle>
+      </svg>`;
+    this.proofreadButton.title = 'AI is processing your text... Please wait';
+    this.proofreadButton.style.background = 'linear-gradient(135deg, #FF9800, #FF5722)';
+    this.proofreadButton.style.cursor = 'wait';
+    this.proofreadButton.disabled = true;
   }
 
   hideLoadingState() {
-    this.proofreadButton.innerHTML = `<svg width="16" height="16" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="16" cy="16" r="15" fill="currentColor"/>
-      <text x="16" y="20" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="white">AI</text>
-      <circle cx="8" cy="8" r="1.5" fill="white" opacity="0.8"/>
-      <circle cx="24" cy="8" r="1.5" fill="white" opacity="0.8"/>
-      <circle cx="8" cy="24" r="1.5" fill="white" opacity="0.8"/>
-      <circle cx="24" cy="24" r="1.5" fill="white" opacity="0.8"/>
+    // Restore the beautiful AI icon with neural network design
+    this.proofreadButton.innerHTML = `<svg width="20" height="20" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="aiButtonGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style="stop-color:#667eea"/>
+          <stop offset="50%" style="stop-color:#764ba2"/>
+          <stop offset="100%" style="stop-color:#f093fb"/>
+        </linearGradient>
+        <linearGradient id="circuitGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style="stop-color:#00d4aa"/>
+          <stop offset="100%" style="stop-color:#00a8ff"/>
+        </linearGradient>
+      </defs>
+      <circle cx="16" cy="16" r="15" fill="url(#aiButtonGrad)" stroke="white" stroke-width="1"/>
+      <g opacity="0.3">
+        <rect x="8" y="8" width="16" height="1" fill="url(#circuitGrad)" rx="0.5"/>
+        <rect x="8" y="11" width="12" height="1" fill="url(#circuitGrad)" rx="0.5"/>
+        <rect x="8" y="14" width="16" height="1" fill="url(#circuitGrad)" rx="0.5"/>
+        <rect x="8" y="17" width="10" height="1" fill="url(#circuitGrad)" rx="0.5"/>
+        <rect x="8" y="20" width="14" height="1" fill="url(#circuitGrad)" rx="0.5"/>
+        <rect x="8" y="23" width="8" height="1" fill="url(#circuitGrad)" rx="0.5"/>
+        <rect x="12" y="8" width="1" height="15" fill="url(#circuitGrad)" rx="0.5"/>
+        <rect x="20" y="8" width="1" height="12" fill="url(#circuitGrad)" rx="0.5"/>
+        <rect x="16" y="11" width="1" height="9" fill="url(#circuitGrad)" rx="0.5"/>
+      </g>
+      <text x="16" y="20" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="white" stroke="rgba(0,0,0,0.3)" stroke-width="0.5">AI</text>
+      <circle cx="10" cy="10" r="1.5" fill="white" opacity="0.8"/>
+      <circle cx="22" cy="10" r="1.5" fill="white" opacity="0.8"/>
+      <circle cx="16" cy="6" r="1.5" fill="white" opacity="0.8"/>
+      <circle cx="10" cy="26" r="1.5" fill="white" opacity="0.8"/>
+      <circle cx="22" cy="26" r="1.5" fill="white" opacity="0.8"/>
+      <line x1="10" y1="10" x2="16" y2="6" stroke="white" stroke-width="0.5" opacity="0.6"/>
+      <line x1="22" y1="10" x2="16" y2="6" stroke="white" stroke-width="0.5" opacity="0.6"/>
+      <line x1="10" y1="10" x2="10" y2="26" stroke="white" stroke-width="0.5" opacity="0.6"/>
+      <line x1="22" y1="10" x2="22" y2="26" stroke="white" stroke-width="0.5" opacity="0.6"/>
     </svg>`;
-    this.proofreadButton.title = this.currentContext?.settings?.contextHint || 'AI Proofread';
-    this.proofreadButton.style.background = '#4CAF50';
+    this.proofreadButton.title = 'AI Proofread - Click to fix text directly';
+    // Restore the beautiful gradient background
+    this.proofreadButton.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)';
+    this.proofreadButton.style.cursor = 'pointer';
+    this.proofreadButton.disabled = false;
   }
 
   showSuccessMessage(message) {

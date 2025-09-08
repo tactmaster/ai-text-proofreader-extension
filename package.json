@@ -11,7 +11,10 @@
     "test:coverage": "jest --coverage",
     "test:formatting": "jest tests/formatting-preservation.test.js --verbose",
     "test:context": "jest tests/context-recognition.test.js --verbose",
-    "test:anti-pattern": "jest tests/anti-pattern.test.js --verbose"
+    "test:anti-pattern": "jest tests/anti-pattern.test.js --verbose",
+    "test:errors": "jest tests/chrome-runtime-error.test.js tests/extension-integration-error.test.js --verbose",
+    "test:runtime": "jest tests/chrome-runtime-error.test.js --verbose",
+    "test:integration": "jest tests/extension-integration-error.test.js --verbose"
   },
   "keywords": [
     "chrome-extension",

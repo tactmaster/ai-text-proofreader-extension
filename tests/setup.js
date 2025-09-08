@@ -22,7 +22,9 @@ global.chrome = {
       addListener: jest.fn(),
       removeListener: jest.fn()
     },
-    getURL: jest.fn((path) => `chrome-extension://test-extension-id/${path}`)
+    getURL: jest.fn((path) => `chrome-extension://test-extension-id/${path}`),
+    id: 'test-extension-id',
+    getManifest: jest.fn(() => ({ version: '1.0.0' }))
   },
   tabs: {
     query: jest.fn(),

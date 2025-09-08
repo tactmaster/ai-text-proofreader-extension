@@ -76,6 +76,10 @@ class PopupController {
       this.copyDebugInfo();
     });
 
+    document.getElementById('enable-word-mode').addEventListener('click', () => {
+      this.toggleWordMode();
+    });
+
     // Context tab event listeners
     this.setupContextEventListeners();
   }
@@ -138,6 +142,19 @@ class PopupController {
       document.getElementById('custom-endpoint-input').value = settings.customEndpoint;
 
       this.updateProviderSettings();
+      
+      // Load Word mode state
+      const wordResult = await chrome.storage.sync.get(['wordModeEnabled']);
+      const wordModeEnabled = wordResult.wordModeEnabled || false;
+      const wordButton = document.getElementById('enable-word-mode');
+      if (wordModeEnabled) {
+        wordButton.textContent = '✅ Word Mode Enabled';
+        wordButton.style.background = 'linear-gradient(135deg, #4CAF50, #45a049)';
+      } else {
+        wordButton.textContent = '🔗 Enable Word Mode';
+        wordButton.style.background = 'linear-gradient(135deg, #2196F3, #1976D2)';
+      }
+      
     } catch (error) {
       console.error('Failed to load settings:', error);
     }
@@ -269,9 +286,9 @@ class PopupController {
       }
     } catch (error) {
       this.showStatus('Extension error: ' + error.message, 'error');
+    } finally {
+      this.showLoading(false);
     }
-
-    this.showLoading(false);
   }
 
   async getSuggestions() {
@@ -299,9 +316,9 @@ class PopupController {
       }
     } catch (error) {
       this.showStatus('Extension error: ' + error.message, 'error');
+    } finally {
+      this.showLoading(false);
     }
-
-    this.showLoading(false);
   }
 
   displaySuggestions(suggestions) {
@@ -612,6 +629,43 @@ class PopupController {
     }).catch(err => {
       this.showStatus('Failed to copy: ' + err.message, 'error');
     });
+  }
+
+  async toggleWordMode() {
+    try {
+      const result = await chrome.storage.sync.get(['wordModeEnabled']);
+      const currentMode = result.wordModeEnabled || false;
+      const newMode = !currentMode;
+      
+      await chrome.storage.sync.set({ wordModeEnabled: newMode });
+      
+      const button = document.getElementById('enable-word-mode');
+      if (newMode) {
+        button.textContent = '✅ Word Mode Enabled';
+        button.style.background = 'linear-gradient(135deg, #4CAF50, #45a049)';
+        this.showStatus('Word mode enabled! Enhanced features for Microsoft Word.', 'success');
+      } else {
+        button.textContent = '🔗 Enable Word Mode';
+        button.style.background = 'linear-gradient(135deg, #2196F3, #1976D2)';
+        this.showStatus('Word mode disabled.', 'info');
+      }
+      
+      // Notify content script about mode change
+      chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+        if (tabs[0]) {
+          chrome.tabs.sendMessage(tabs[0].id, {
+            action: 'updateWordMode',
+            enabled: newMode
+          }).catch(() => {
+            // Ignore errors if content script not available
+          });
+        }
+      });
+      
+    } catch (error) {
+      console.error('Failed to toggle Word mode:', error);
+      this.showStatus('Failed to toggle Word mode', 'error');
+    }
   }
 
   // Context Management Methods
