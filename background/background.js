@@ -1,4 +1,8 @@
 // Background service worker for AI Text Proofreader
+
+// Import browser API abstraction (loaded via manifest)
+// This provides cross-browser compatibility for Chrome, Edge, and Firefox
+
 class LLMProofreader {
   constructor() {
     this.localEndpoint = 'http://127.0.0.1:11434/api/generate'; // Use 127.0.0.1 instead of localhost for better Chrome extension compatibility
@@ -173,8 +177,8 @@ class LLMProofreader {
 
   async loadSettings() {
     try {
-      console.log('[DEBUG] Loading settings from chrome.storage.sync');
-      const result = await chrome.storage.sync.get(['llmSettings']);
+      console.log('[DEBUG] Loading settings from browser storage');
+      const result = await browserAPI.storage.sync.get(['llmSettings']);
       if (result.llmSettings) {
         this.settings = { ...this.settings, ...result.llmSettings };
         console.log('[DEBUG] Settings loaded:', { 
@@ -440,7 +444,7 @@ class LLMProofreader {
 
   async saveSettings(newSettings) {
     this.settings = { ...this.settings, ...newSettings };
-    await chrome.storage.sync.set({ llmSettings: this.settings });
+    await browserAPI.storage.sync.set({ llmSettings: this.settings });
   }
 
   async queryProvider(prompt) {
@@ -1201,7 +1205,7 @@ Suggestions:`;
 const proofreader = new LLMProofreader();
 
 // Handle messages from content script and popup
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+browserAPI.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log(`[DEBUG] Received message:`, request);
   
   switch (request.action) {
@@ -1276,6 +1280,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 // Handle extension installation
-chrome.runtime.onInstalled.addListener(() => {
+browserAPI.runtime.onInstalled.addListener(() => {
   console.log('AI Text Proofreader extension installed');
 });

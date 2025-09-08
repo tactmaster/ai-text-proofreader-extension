@@ -1,12 +1,22 @@
-# AI Text Proofreader Chrome Extension
+# AI Text Proofreader Multi-Browser Extension
 
-[![Test Chrome Extension](https://github.com/tactmaster/ai-text-proofreader-extension/actions/workflows/test.yml/badge.svg)](https://github.com/tactmaster/ai-text-proofreader-extension/actions/workflows/test.yml)
+[![Test Extension](https://github.com/tactmaster/ai-text-proofreader-extension/actions/workflows/test.yml/badge.svg)](https://github.com/tactmaster/ai-text-proofreader-extension/actions/workflows/test.yml)
 [![Code Quality & Security](https://github.com/tactmaster/ai-text-proofreader-extension/actions/workflows/quality.yml/badge.svg)](https://github.com/tactmaster/ai-text-proofreader-extension/actions/workflows/quality.yml)
+[![Multi-Browser Build](https://github.com/tactmaster/ai-text-proofreader-extension/actions/workflows/release.yml/badge.svg)](https://github.com/tactmaster/ai-text-proofreader-extension/actions/workflows/release.yml)
 
-A powerful Chrome extension that uses AI/LLM technology to proofread and correct text in any text input field on web pages. Supports both local LLMs (via Ollama) and cloud-based services like OpenAI.
+A powerful **multi-browser extension** that works on **Chrome**, **Edge**, and **Firefox**, using AI/LLM technology to proofread and correct text in any text input field on web pages. Supports both local LLMs (via Ollama) and cloud-based services like OpenAI.
+
+## 🌐 Browser Support
+
+| Browser | Support | Manifest | Status |
+|---------|---------|----------|---------|
+| **Chrome** | ✅ Full | V3 | Ready |
+| **Edge** | ✅ Full | V3 | Ready |
+| **Firefox** | ✅ Full | V2 | Ready |
 
 ## Features
 
+- 🌍 **Multi-Browser Compatible**: Works seamlessly on Chrome, Edge, and Firefox
 - 🤖 **Dual-Button Interface**: Separate buttons for direct proofreading and advanced options
 - 🎨 **Beautiful AI Icons**: Neural network inspired designs with modern gradients
 - ⚡ **One-Click Proofreading**: Instant text correction with the dedicated AI button
@@ -17,17 +27,37 @@ A powerful Chrome extension that uses AI/LLM technology to proofread and correct
 - 💡 **Suggestion Mode**: Get detailed suggestions with explanations before applying changes
 - 🖱️ **Easy Access**: Right-click context menu and floating buttons for quick access
 - ⚙️ **Flexible Configuration**: Multiple LLM providers with customizable settings
+- 🔄 **Shared Backend**: Same features and settings across all browsers
 - 🧪 **Automated Testing**: Comprehensive test suite with 35+ tests ensuring reliability
 
 ## Installation
 
-### From Source (Development)
+### 📦 Pre-built Packages (Recommended)
+
+Download the latest release for your browser:
+
+- **Chrome/Edge**: Download `ai-text-proofreader-chrome-edge-v{version}.zip`
+- **Firefox**: Download `ai-text-proofreader-firefox-v{version}.zip`
+
+#### Chrome/Edge Installation
+1. Download and extract the Chrome/Edge package
+2. Open Chrome/Edge and go to `chrome://extensions/` or `edge://extensions/`
+3. Enable "Developer mode" in the top-right corner
+4. Click "Load unpacked" and select the extracted folder
+
+#### Firefox Installation
+1. Download and extract the Firefox package
+2. Open Firefox and go to `about:debugging`
+3. Click "This Firefox"
+4. Click "Load Temporary Add-on"
+5. Select the `manifest.json` file from the extracted folder
+
+### 🛠️ From Source (Development)
 
 1. Clone or download this repository
-2. Open Chrome and navigate to `chrome://extensions/`
-3. Enable "Developer mode" in the top-right corner
-4. Click "Load unpacked" and select the extension directory
-5. The extension will appear in your Chrome toolbar
+2. Run `npm install` to install dependencies
+3. Run `npm run build` to create browser packages
+4. Follow the installation steps above for your browser
 
 ### Setting Up Local LLM (Recommended)
 
@@ -72,7 +102,7 @@ For privacy and offline usage, set up Ollama:
 
 ### From Extension Popup
 
-1. **Click the extension icon** in Chrome toolbar
+1. **Click the extension icon** in your browser toolbar
 2. **Paste your text** in the text area
 3. **Choose an action**:
    - **Proofread Text**: Get corrected version
@@ -144,15 +174,18 @@ ollama serve
 ### General Issues
 - **Extension Not Working**: Reload the webpage and try again
 - **Button Not Appearing**: Check if the text field is focusable
-- **Settings Not Saving**: Check Chrome storage permissions
+- **Settings Not Saving**: Check browser storage permissions
 
 ## Development
 
 ### Project Structure
 ```
-├── manifest.json          # Extension manifest (Manifest V3)
+├── manifest.json              # Chrome/Edge manifest (Manifest V3)
+├── manifest-firefox.json      # Firefox manifest (Manifest V2)
+├── shared/
+│   └── browser-api.js         # Cross-browser API abstraction
 ├── background/
-│   └── background.js      # Service worker for LLM integration
+│   └── background.js          # Service worker/background script
 ├── content/
 │   ├── content.js         # Content script for webpage interaction
 │   └── content.css        # Styles for injected elements

@@ -12,9 +12,9 @@ class TextBoxProofreader {
   }
 
   async init() {
-    // Check if Chrome extension APIs are available
-    if (!chrome || !chrome.runtime) {
-      console.error('[AI Proofreader] Chrome extension APIs not available');
+    // Check if browser extension APIs are available
+    if (!browserAPI || !browserAPI.isExtensionContext()) {
+      console.error('[AI Proofreader] Browser extension APIs not available');
       console.error('[AI Proofreader] Make sure the extension is properly loaded');
       return;
     }
@@ -502,9 +502,9 @@ class TextBoxProofreader {
   async proofreadSelectedText() {
     if (!this.selectedElement) return;
 
-    // Check if chrome.runtime is available
-    if (!chrome || !chrome.runtime) {
-      console.error('[AI Proofreader] Chrome runtime not available');
+    // Check if browser runtime is available
+    if (!browserAPI || !browserAPI.isExtensionContext()) {
+      console.error('[AI Proofreader] Browser runtime not available');
       this.showErrorMessage('Extension runtime not available. Please reload the extension.');
       return;
     }
@@ -529,7 +529,7 @@ class TextBoxProofreader {
       
       console.log(`[Context] Using ${this.currentContext.name} context with ${this.selectedTone} tone`);
 
-      const response = await chrome.runtime.sendMessage({
+      const response = await browserAPI.runtime.sendMessage({
         action: 'proofreadWithContext',
         text: text,
         context: {
@@ -557,9 +557,9 @@ class TextBoxProofreader {
   async getSuggestions() {
     if (!this.selectedElement) return;
 
-    // Check if chrome.runtime is available
-    if (!chrome || !chrome.runtime) {
-      console.error('[AI Proofreader] Chrome runtime not available');
+    // Check if browser runtime is available
+    if (!browserAPI || !browserAPI.isExtensionContext()) {
+      console.error('[AI Proofreader] Browser runtime not available');
       this.showErrorMessage('Extension runtime not available. Please reload the extension.');
       return;
     }
@@ -581,7 +581,7 @@ class TextBoxProofreader {
       // Generate context-aware prompt for suggestions
       const contextPrompt = await getContextPrompt(text, this.selectedTone);
 
-      const response = await chrome.runtime.sendMessage({
+      const response = await browserAPI.runtime.sendMessage({
         action: 'getSuggestionsWithContext',
         text: text,
         context: {
@@ -818,15 +818,15 @@ class TextBoxProofreader {
 // Initialize the proofreader when page loads
 function initializeExtension() {
   try {
-    // Check if Chrome extension context is available
-    if (typeof chrome === 'undefined' || !chrome.runtime) {
-      console.error('[AI Proofreader] Chrome extension context not available');
+    // Check if browser extension context is available
+    if (!browserAPI) {
+      console.error('[AI Proofreader] Browser extension context not available');
       console.error('[AI Proofreader] Please reload the extension and refresh this page');
       return;
     }
 
     // Check if runtime is connected
-    if (!chrome.runtime.id) {
+    if (!browserAPI.isExtensionContext()) {
       console.error('[AI Proofreader] Extension runtime disconnected');
       console.error('[AI Proofreader] Please reload the extension');
       return;

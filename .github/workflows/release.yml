@@ -1,4 +1,4 @@
-name: Build and Package Extension
+name: Multi-Browser Extension Build and Package
 
 on:
   release:
@@ -37,50 +37,55 @@ jobs:
         echo "version=$VERSION" >> $GITHUB_OUTPUT
         echo "Extension version: $VERSION"
         
-    - name: Create extension package
+    - name: Build multi-browser packages
       run: |
-        echo "📦 Creating extension package..."
+        echo "📦 Building packages for all browsers..."
+        npm run build
         
-        # Create a clean build directory
-        mkdir -p build/ai-text-proofreader-v${{ steps.version.outputs.version }}
-        
-        # Copy extension files (exclude development files)
-        cp -r background build/ai-text-proofreader-v${{ steps.version.outputs.version }}/
-        cp -r content build/ai-text-proofreader-v${{ steps.version.outputs.version }}/
-        cp -r popup build/ai-text-proofreader-v${{ steps.version.outputs.version }}/
-        cp manifest.json build/ai-text-proofreader-v${{ steps.version.outputs.version }}/
-        cp README.md build/ai-text-proofreader-v${{ steps.version.outputs.version }}/
-        
-        # Create zip file for Chrome Web Store
-        cd build
-        zip -r "ai-text-proofreader-v${{ steps.version.outputs.version }}.zip" "ai-text-proofreader-v${{ steps.version.outputs.version }}/"
-        
-        echo "✅ Package created: ai-text-proofreader-v${{ steps.version.outputs.version }}.zip"
-        
-    - name: Generate checksums
+    - name: List build artifacts
       run: |
-        cd build
-        sha256sum "ai-text-proofreader-v${{ steps.version.outputs.version }}.zip" > checksums.txt
-        echo "📄 Checksums generated"
-        cat checksums.txt
+        echo "📁 Build artifacts:"
+        ls -la dist/
+        echo ""
+        echo "🔍 Checksums:"
+        cat dist/checksums.txt
         
-    - name: Upload package as artifact
+    - name: Upload Chrome/Edge package as artifact
       uses: actions/upload-artifact@v4
       with:
-        name: ai-text-proofreader-v${{ steps.version.outputs.version }}
+        name: chrome-edge-extension-v${{ steps.version.outputs.version }}
         path: |
-          build/ai-text-proofreader-v${{ steps.version.outputs.version }}.zip
-          build/checksums.txt
+          dist/ai-text-proofreader-chrome-edge-v${{ steps.version.outputs.version }}.zip
+          dist/checksums.txt
           
-    - name: Upload to release
+    - name: Upload Firefox package as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: firefox-extension-v${{ steps.version.outputs.version }}
+        path: |
+          dist/ai-text-proofreader-firefox-v${{ steps.version.outputs.version }}.zip
+          dist/checksums.txt
+          
+    - name: Upload Chrome/Edge package to release
       if: github.event_name == 'release'
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ github.event.release.upload_url }}
-        asset_path: build/ai-text-proofreader-v${{ steps.version.outputs.version }}.zip
-        asset_name: ai-text-proofreader-v${{ steps.version.outputs.version }}.zip
+        asset_path: dist/ai-text-proofreader-chrome-edge-v${{ steps.version.outputs.version }}.zip
+        asset_name: ai-text-proofreader-chrome-edge-v${{ steps.version.outputs.version }}.zip
+        asset_content_type: application/zip
+        
+    - name: Upload Firefox package to release
+      if: github.event_name == 'release'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: dist/ai-text-proofreader-firefox-v${{ steps.version.outputs.version }}.zip
+        asset_name: ai-text-proofreader-firefox-v${{ steps.version.outputs.version }}.zip
         asset_content_type: application/zip
         
     - name: Upload checksums to release
@@ -90,9 +95,110 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ github.event.release.upload_url }}
-        asset_path: build/checksums.txt
+        asset_path: dist/checksums.txt
         asset_name: checksums.txt
         asset_content_type: text/plain
+        
+    - name: Generate multi-browser installation instructions
+      run: |
+        cat > INSTALLATION.md << 'EOF'
+        # AI Text Proofreader v${{ steps.version.outputs.version }} - Multi-Browser Installation Guide
+        
+        This extension is now available for **Chrome**, **Edge**, and **Firefox**!
+        
+        ## 🌐 Browser Support
+        
+        - ✅ **Chrome** - Full support (Manifest V3)
+        - ✅ **Edge** - Full support (Manifest V3) 
+        - ✅ **Firefox** - Full support (Manifest V2)
+        
+        ## 📦 Downloads
+        
+        Choose the package for your browser:
+        
+        - **Chrome/Edge**: `ai-text-proofreader-chrome-edge-v${{ steps.version.outputs.version }}.zip`
+        - **Firefox**: `ai-text-proofreader-firefox-v${{ steps.version.outputs.version }}.zip`
+        
+        ## 🔧 Installation Instructions
+        
+        ### Chrome/Edge Installation
+        
+        1. Download the `ai-text-proofreader-chrome-edge-v${{ steps.version.outputs.version }}.zip` file
+        2. Extract the ZIP file to a folder on your computer
+        3. Open Chrome/Edge and go to:
+           - Chrome: `chrome://extensions/`
+           - Edge: `edge://extensions/`
+        4. Enable "Developer mode" (toggle in top-right corner)
+        5. Click "Load unpacked" and select the extracted folder
+        6. The extension should now appear in your extensions list
+        
+        ### Firefox Installation
+        
+        #### Temporary Installation (for testing)
+        1. Download the `ai-text-proofreader-firefox-v${{ steps.version.outputs.version }}.zip` file
+        2. Extract the ZIP file to a folder on your computer
+        3. Open Firefox and go to `about:debugging`
+        4. Click "This Firefox"
+        5. Click "Load Temporary Add-on"
+        6. Select the `manifest.json` file from the extracted folder
+        
+        #### Permanent Installation
+        For permanent installation in Firefox, the extension needs to be signed by Mozilla. This is currently in development.
+        
+        ## ✨ Features
+        
+        - 🤖 **AI-powered text proofreading** and correction
+        - 🎯 **Context-aware suggestions** (Email, GitHub, Social Media, etc.)
+        - 🔧 **Customizable settings** and prompts
+        - 🌐 **Multi-provider support**: Local (Ollama) and cloud (OpenAI) LLMs
+        - 📝 **Formatting preservation** (newlines, bullets, code blocks)
+        - 🔒 **Privacy-focused** with local LLM support
+        - 🌍 **Cross-browser compatibility** (Chrome, Edge, Firefox)
+        
+        ## ⚙️ Configuration
+        
+        1. Click the extension icon in your browser toolbar
+        2. Go to **Settings** tab to configure your AI provider
+        3. Go to **Context** tab to customize website categories and prompts
+        
+        ## 🚀 Supported AI Providers
+        
+        - **Ollama (Local)**: Run AI models locally for maximum privacy
+        - **OpenAI**: Use GPT models via API key
+        - **Custom Endpoint**: Connect to your own AI service
+        
+        ## 🔐 Security & Privacy
+        
+        - **Local processing**: Use Ollama for complete privacy
+        - **No data collection**: Your text never leaves your computer with local models
+        - **Secure API calls**: Cloud providers use encrypted connections
+        
+        ## 🔍 Verification
+        
+        **SHA256 Checksums**: See `checksums.txt` file
+        
+        Verify download integrity by checking the SHA256 hash matches the provided checksum.
+        
+        ## 🆘 Support
+        
+        For issues, questions, or feature requests, please visit the GitHub repository:
+        https://github.com/tactmaster/ai-text-proofreader-extension
+        
+        ---
+        
+        **Multi-Browser Extension** | **v${{ steps.version.outputs.version }}** | **Built with ❤️ for Chrome, Edge & Firefox**
+        EOF
+        
+    - name: Upload installation instructions to release
+      if: github.event_name == 'release'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: INSTALLATION.md
+        asset_name: INSTALLATION.md
+        asset_content_type: text/markdown
         
     - name: Generate installation instructions
       run: |

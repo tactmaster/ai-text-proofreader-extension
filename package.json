@@ -5,7 +5,9 @@
   "main": "manifest.json",
   "scripts": {
     "dev": "echo 'Load extension in Chrome: chrome://extensions/ > Developer mode > Load unpacked'",
-    "build": "echo 'No build process required for this extension'",
+    "build": "scripts/build-multi-browser.sh",
+    "build:chrome": "echo 'Building Chrome/Edge package...' && scripts/build-multi-browser.sh",
+    "build:firefox": "echo 'Building Firefox package...' && scripts/build-multi-browser.sh",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
@@ -18,6 +20,9 @@
   },
   "keywords": [
     "chrome-extension",
+    "firefox-addon",
+    "edge-extension",
+    "multi-browser",
     "ai",
     "llm",
     "proofreading",

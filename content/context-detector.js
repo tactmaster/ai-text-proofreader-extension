@@ -186,7 +186,7 @@ class ContextDetector {
 
   async loadCustomSettings() {
     try {
-      const result = await chrome.storage.sync.get(['contextSettings']);
+      const result = await browserAPI.storage.sync.get(['contextSettings']);
       this.customSettings = result.contextSettings;
       console.log('[DEBUG] Loaded custom context settings:', this.customSettings);
     } catch (error) {

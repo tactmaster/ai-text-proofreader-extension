@@ -133,7 +133,7 @@ class PopupController {
 
   async loadSettings() {
     try {
-      const response = await chrome.runtime.sendMessage({ action: 'getSettings' });
+      const response = await browserAPI.runtime.sendMessage({ action: 'getSettings' });
       const settings = response.settings;
 
       document.getElementById('provider-select').value = settings.provider;
@@ -144,7 +144,7 @@ class PopupController {
       this.updateProviderSettings();
       
       // Load Word mode state
-      const wordResult = await chrome.storage.sync.get(['wordModeEnabled']);
+      const wordResult = await browserAPI.storage.sync.get(['wordModeEnabled']);
       const wordModeEnabled = wordResult.wordModeEnabled || false;
       const wordButton = document.getElementById('enable-word-mode');
       if (wordModeEnabled) {
@@ -272,7 +272,7 @@ class PopupController {
     this.hideResults();
 
     try {
-      const response = await chrome.runtime.sendMessage({
+      const response = await browserAPI.runtime.sendMessage({
         action: 'proofread',
         text: inputText
       });
@@ -302,7 +302,7 @@ class PopupController {
     this.hideSuggestions();
 
     try {
-      const response = await chrome.runtime.sendMessage({
+      const response = await browserAPI.runtime.sendMessage({
         action: 'getSuggestions',
         text: inputText
       });
@@ -368,7 +368,7 @@ class PopupController {
     };
 
     try {
-      const response = await chrome.runtime.sendMessage({
+      const response = await browserAPI.runtime.sendMessage({
         action: 'saveSettings',
         settings: settings
       });
@@ -398,7 +398,7 @@ class PopupController {
 
     try {
       // First test the new testConnection endpoint
-      const testResponse = await chrome.runtime.sendMessage({
+      const testResponse = await browserAPI.runtime.sendMessage({
         action: 'testConnection'
       });
 
@@ -434,7 +434,7 @@ class PopupController {
         if (!testResponse.warning) {
           this.showStatus('Running proofreading test...', 'warning');
           
-          const proofResponse = await chrome.runtime.sendMessage({
+          const proofResponse = await browserAPI.runtime.sendMessage({
             action: 'proofread',
             text: 'Test connection with a speling mistake.'
           });
@@ -577,11 +577,11 @@ class PopupController {
     
     try {
       // Get current settings
-      const settingsResponse = await chrome.runtime.sendMessage({ action: 'getSettings' });
+      const settingsResponse = await browserAPI.runtime.sendMessage({ action: 'getSettings' });
       const settings = settingsResponse.settings;
       
       // Test connection
-      const testResponse = await chrome.runtime.sendMessage({ action: 'testConnection' });
+      const testResponse = await browserAPI.runtime.sendMessage({ action: 'testConnection' });
       
       const debugInfo = {
         timestamp: timestamp,
@@ -633,11 +633,11 @@ class PopupController {
 
   async toggleWordMode() {
     try {
-      const result = await chrome.storage.sync.get(['wordModeEnabled']);
+      const result = await browserAPI.storage.sync.get(['wordModeEnabled']);
       const currentMode = result.wordModeEnabled || false;
       const newMode = !currentMode;
       
-      await chrome.storage.sync.set({ wordModeEnabled: newMode });
+      await browserAPI.storage.sync.set({ wordModeEnabled: newMode });
       
       const button = document.getElementById('enable-word-mode');
       if (newMode) {
@@ -651,9 +651,9 @@ class PopupController {
       }
       
       // Notify content script about mode change
-      chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+      browserAPI.tabs.query({active: true, currentWindow: true}, (tabs) => {
         if (tabs[0]) {
-          chrome.tabs.sendMessage(tabs[0].id, {
+          browserAPI.tabs.sendMessage(tabs[0].id, {
             action: 'updateWordMode',
             enabled: newMode
           }).catch(() => {
@@ -671,7 +671,7 @@ class PopupController {
   // Context Management Methods
   async loadContextSettings() {
     try {
-      const result = await chrome.storage.sync.get(['contextSettings']);
+      const result = await browserAPI.storage.sync.get(['contextSettings']);
       this.contextSettings = result.contextSettings || this.getDefaultContextSettings();
       this.renderWebsiteLists();
       this.loadPromptForCategory();
@@ -862,7 +862,7 @@ class PopupController {
 
   async saveContextSettings() {
     try {
-      await chrome.storage.sync.set({ contextSettings: this.contextSettings });
+      await browserAPI.storage.sync.set({ contextSettings: this.contextSettings });
       this.showStatus('Context settings saved successfully!', 'success');
     } catch (error) {
       console.error('Failed to save context settings:', error);
