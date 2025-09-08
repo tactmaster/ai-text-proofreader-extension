@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Text Proofreader - Dual Button Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: Arial, sans-serif;
+            margin: 10px 0;
+            resize: vertical;
+            min-height: 100px;
+        }
+        textarea:focus, input[type="text"]:focus {
+            border-color: #4CAF50;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+        }
+        .button-demo {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            align-items: center;
+        }
+        .demo-button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        .ai-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            color: white;
+        }
+        .menu-button {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        .demo-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        .instructions {
+            background: #e8f5e8;
+            border-left: 4px solid #4CAF50;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .feature-list {
+            background: #f0f8ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 AI Text Proofreader - Dual Button System</h1>
+        
+        <div class="instructions">
+            <h3>📋 How to Test:</h3>
+            <ol>
+                <li><strong>Load the Extension</strong>: Make sure the AI Text Proofreader extension is loaded in your browser</li>
+                <li><strong>Click on Text Fields</strong>: Click on any text input below to see the new dual-button system</li>
+                <li><strong>Test Both Buttons</strong>:
+                    <ul>
+                        <li><strong>AI Button</strong> (left, purple gradient) - Directly proofreads text</li>
+                        <li><strong>Menu Button</strong> (right, blue gradient) - Shows suggestions and settings</li>
+                    </ul>
+                </li>
+            </ol>
+        </div>
+
+        <div class="feature-list">
+            <h3>✨ New Features:</h3>
+            <ul>
+                <li>🎨 <strong>Beautiful AI Logo Icons</strong> - Neural network inspired designs</li>
+                <li>⚡ <strong>Direct Proofreading</strong> - One-click text correction</li>
+                <li>🎛️ <strong>Separate Menu</strong> - Suggestions, settings, and options</li>
+                <li>🌈 <strong>Gradient Styling</strong> - Modern, professional appearance</li>
+                <li>📱 <strong>Smart Positioning</strong> - Buttons adapt to screen edges</li>
+            </ul>
+        </div>
+
+        <div class="button-demo">
+            <span><strong>Button Preview:</strong></span>
+            <button class="demo-button ai-button">🤖 AI Proofread</button>
+            <button class="demo-button menu-button">⚙️ Menu & Settings</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="test-section">
+            <h3>📝 Test Text Areas</h3>
+            <p>Click on these text fields to see the new dual-button system in action:</p>
+            
+            <label for="email"><strong>Email Text:</strong></label>
+            <textarea id="email" placeholder="Type an email here with some intentional mistakes to test proofreading...">Dear Sarah,
+
+I hope this email finds you well. I wanted to reach out and discus the upcoming project we talked about last week. Their are a few things I think we should consider before moving foward.
+
+First, the timeline seems a bit agressive given our current workload. Second, I beleive we may need aditional resources to meet the quality standards we've set.
+
+Could we schedule a meeting to talk through these concerns? I'm availible tomorrow afternoon or Friday morning.
+
+Best regards,
+Alex</textarea>
+
+            <label for="social"><strong>Social Media Post:</strong></label>
+            <textarea id="social" placeholder="Write a social media post with some errors...">Just finished reading an amazing book about artifical intelligence and its impact on the future! 🤖
+
+The authers really did a grate job explaining complex concepts in a way thats easy to understand. Definately recommend it to anyone intrested in technology and innovation.
+
+What's everyone else reading these days? Drop your recommendations in the comments bellow! 📚
+
+#AI #Technology #BookRecommendations #Learning</textarea>
+
+            <label for="business"><strong>Business Document:</strong></label>
+            <textarea id="business" placeholder="Write some business text...">Quarterly Financial Report Summary
+
+This report provides an overview of our companys performance for Q3 2024. Overall, we've seen significant growth accross multiple departments, exceding our initial projections by 15%.
+
+Key Highlights:
+- Revenue increased by 23% compared to the previous quarter
+- Customer aquisition costs have been reduced by 18%
+- Employee satisfaction scores reached an all-time high of 8.7/10
+
+However, their are still areas where we can improve. Supply chain disruptions have effected our delivery times, and we're working diligently to adress these issues.
+
+Moving foward, our focus will be on sustainability and operational eficiency.</textarea>
+
+            <label for="academic"><strong>Academic Writing:</strong></label>
+            <textarea id="academic" placeholder="Academic text with errors...">The Impact of Machine Learning on Modern Healthcare
+
+Abstract: This paper examines the role of machine learning algoritms in revolutionizing healthcare delivery. Through a comprehensive analysis of recent studies, we demonstrate how AI-driven solutions have significantly improved diagnostic accuracy and patient outcomes.
+
+Introduction: Healthcare systems worldwide are experiencing unprecidented challenges, from aging populations to increasing costs. Machine learning technologies offer promising solutions to these complex problems. Researchers have developped sophisticated models that can analyse vast amounts of medical data, identifing patterns that might be missed by human practitioners.
+
+The aplication of neural networks in medical imaging has been particulary sucessful, with some systems acheiving diagnostic accuracy rates that exceed those of experienced radiologists.</textarea>
+
+            <label for="simple"><strong>Simple Text Input:</strong></label>
+            <input type="text" id="simple" placeholder="Type a sentence with some typos here..." value="This sentance has some speling mistakes that need to be corrected.">
+        </div>
+    </div>
+
+    <div class="container">
+        <h3>🔧 Testing Instructions</h3>
+        <div class="feature-list">
+            <h4>Expected Behavior:</h4>
+            <ul>
+                <li><strong>On Focus</strong>: Two buttons should appear near the text field</li>
+                <li><strong>Left Button (AI)</strong>: Purple gradient with neural network icon - directly proofreads text</li>
+                <li><strong>Right Button (Menu)</strong>: Blue gradient with gear icon - shows menu with suggestions and settings</li>
+                <li><strong>Positioning</strong>: Buttons should position intelligently based on available screen space</li>
+                <li><strong>Hover Effects</strong>: Buttons should scale and show shadow effects on hover</li>
+                <li><strong>Responsive</strong>: System should work on different screen sizes</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

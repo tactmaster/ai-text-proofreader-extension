@@ -1,12 +1,19 @@
 # Icons for AI Text Proofreader
 
-This folder contains the extension icons. I've created SVG versions and a converter tool.
+Beautiful AI-in-a-book themed icons with colorful gradients and sparkle effects.
 
 ## ✅ Generated Files:
-- `icon16.svg` - 16x16 SVG source
-- `icon48.svg` - 48x48 SVG source  
-- `icon128.svg` - 128x128 SVG source
+- `icon-design.svg` - Detailed design version (128x128)
+- `icon-128.svg` - Clean version for 128x128 
+- `icon-48.svg` - Medium size version for 48x48
+- `icon-16.svg` - Small toolbar version for 16x16
 - `icon-converter.html` - Tool to convert SVGs to PNG
+
+## 🎨 Design Features:
+- 📚 **Book**: Blue gradient representing text/document editing
+- 🤖 **AI Badge**: Colorful circular badge with "AI" text
+- ✨ **Sparkles**: Golden/colorful magic effect dots
+- 🌈 **Gradients**: Professional blue-to-teal color scheme
 
 ## 🎯 Required PNG Files:
 - `icon16.png` (16x16) - Toolbar icon

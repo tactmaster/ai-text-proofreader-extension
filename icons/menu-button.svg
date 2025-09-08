@@ -1,0 +1,32 @@
+<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="menuButtonGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4facfe"/>
+      <stop offset="100%" style="stop-color:#00f2fe"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Outer circle -->
+  <circle cx="16" cy="16" r="15" fill="url(#menuButtonGrad)" stroke="white" stroke-width="1"/>
+  
+  <!-- Settings gear icon -->
+  <g transform="translate(16,16)">
+    <!-- Gear teeth -->
+    <path d="M-8,-3 L-8,-6 L-6,-8 L-3,-8 L-1,-6 L-1,-3 L1,-3 L1,-6 L3,-8 L6,-8 L8,-6 L8,-3 L8,1 L6,3 L8,6 L8,8 L6,8 L3,6 L1,3 L-1,3 L-3,6 L-6,8 L-8,8 L-8,6 L-8,3 Z" 
+          fill="white" opacity="0.3"/>
+    
+    <!-- Center gear -->
+    <circle cx="0" cy="0" r="6" fill="white" opacity="0.9"/>
+    <circle cx="0" cy="0" r="3" fill="url(#menuButtonGrad)"/>
+    
+    <!-- Menu lines overlay -->
+    <rect x="-8" y="-2" width="16" height="1" fill="white" rx="0.5"/>
+    <rect x="-6" y="0" width="12" height="1" fill="white" rx="0.5"/>
+    <rect x="-8" y="2" width="16" height="1" fill="white" rx="0.5"/>
+  </g>
+  
+  <!-- Small AI indicator -->
+  <circle cx="24" cy="8" r="4" fill="#ff6b6b" stroke="white" stroke-width="1"/>
+  <text x="24" y="10" font-family="Arial, sans-serif" font-size="4" font-weight="bold" 
+        text-anchor="middle" fill="white">AI</text>
+</svg>

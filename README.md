@@ -7,12 +7,15 @@ A powerful Chrome extension that uses AI/LLM technology to proofread and correct
 
 ## Features
 
-- 🤖 **AI-Powered Proofreading**: Automatic spelling and grammar correction using advanced LLMs
+- 🤖 **Dual-Button Interface**: Separate buttons for direct proofreading and advanced options
+- 🎨 **Beautiful AI Icons**: Neural network inspired designs with modern gradients
+- ⚡ **One-Click Proofreading**: Instant text correction with the dedicated AI button
+- 🎛️ **Advanced Menu**: Separate menu button for suggestions, settings, and options
 - 🏠 **Local LLM Support**: Use Ollama for privacy-focused, offline text correction
 - ☁️ **Cloud LLM Integration**: Support for OpenAI and custom API endpoints
 - 🎯 **Smart Text Detection**: Automatically detects text inputs and content-editable fields
 - 💡 **Suggestion Mode**: Get detailed suggestions with explanations before applying changes
-- 🖱️ **Easy Access**: Right-click context menu and floating button for quick access
+- 🖱️ **Easy Access**: Right-click context menu and floating buttons for quick access
 - ⚙️ **Flexible Configuration**: Multiple LLM providers with customizable settings
 - 🧪 **Automated Testing**: Comprehensive test suite with 35+ tests ensuring reliability
 
@@ -47,14 +50,25 @@ For privacy and offline usage, set up Ollama:
 
 ## Usage
 
-### On Web Pages
+### Dual-Button System on Web Pages
 
 1. **Click on any text input** (textarea, input field, or content-editable element)
-2. **Click the "AI" button** that appears
-3. **Or right-click** on the text field for more options:
-   - Full Proofread: Automatically correct all text
-   - Get Suggestions: Review suggestions before applying
-   - Settings: Configure LLM provider
+2. **Two buttons will appear** with beautiful AI-themed icons:
+
+#### 🤖 **AI Button** (Left - Purple Gradient)
+- **One-click proofreading**: Instantly fixes text in place
+- **Neural network icon**: Beautiful AI logo with circuit patterns
+- **Direct action**: No menus, just immediate correction
+
+#### ⚙️ **Menu Button** (Right - Blue Gradient)  
+- **Advanced options**: Opens menu with additional features
+- **Settings gear icon**: Professional gear with AI badge
+- **Access to**: Suggestions mode, tone selection, extension settings
+
+### Alternative Access Methods
+
+- **Right-click** on any text field for quick menu access
+- **Extension popup**: Click toolbar icon for manual text correction
 
 ### From Extension Popup
 

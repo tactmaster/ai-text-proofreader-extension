@@ -4,6 +4,7 @@ class TextBoxProofreader {
     this.selectedElement = null;
     this.originalText = '';
     this.proofreadButton = null;
+    this.menuButton = null;
     this.suggestionPanel = null;
     this.currentContext = null;
     this.selectedTone = null;
@@ -13,6 +14,7 @@ class TextBoxProofreader {
   async init() {
     await this.initializeContext();
     this.createProofreadButton();
+    this.createMenuButton();
     this.attachEventListeners();
     console.log('AI Text Proofreader content script loaded');
     console.log('Detected context:', this.currentContext?.name || 'General');
@@ -29,21 +31,49 @@ class TextBoxProofreader {
     this.proofreadButton.id = 'ai-proofread-button';
     
     // Get context hint for tooltip
-    const contextHint = this.currentContext?.settings?.contextHint || 'AI Proofread';
-    // Using custom AI icon instead of magnifying glass
-    this.proofreadButton.innerHTML = `<svg width="16" height="16" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="16" cy="16" r="15" fill="currentColor"/>
-      <text x="16" y="20" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="white">AI</text>
-      <circle cx="8" cy="8" r="1.5" fill="white" opacity="0.8"/>
-      <circle cx="24" cy="8" r="1.5" fill="white" opacity="0.8"/>
-      <circle cx="8" cy="24" r="1.5" fill="white" opacity="0.8"/>
-      <circle cx="24" cy="24" r="1.5" fill="white" opacity="0.8"/>
+    const contextHint = 'AI Proofread - Click to fix text directly';
+    
+    // Using new AI logo icon
+    this.proofreadButton.innerHTML = `<svg width="20" height="20" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="aiButtonGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style="stop-color:#667eea"/>
+          <stop offset="50%" style="stop-color:#764ba2"/>
+          <stop offset="100%" style="stop-color:#f093fb"/>
+        </linearGradient>
+        <linearGradient id="circuitGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style="stop-color:#00d4aa"/>
+          <stop offset="100%" style="stop-color:#00a8ff"/>
+        </linearGradient>
+      </defs>
+      <circle cx="16" cy="16" r="15" fill="url(#aiButtonGrad)" stroke="white" stroke-width="1"/>
+      <g opacity="0.3">
+        <rect x="8" y="8" width="16" height="1" fill="url(#circuitGrad)" rx="0.5"/>
+        <rect x="8" y="11" width="12" height="1" fill="url(#circuitGrad)" rx="0.5"/>
+        <rect x="8" y="14" width="16" height="1" fill="url(#circuitGrad)" rx="0.5"/>
+        <rect x="8" y="17" width="10" height="1" fill="url(#circuitGrad)" rx="0.5"/>
+        <rect x="8" y="20" width="14" height="1" fill="url(#circuitGrad)" rx="0.5"/>
+        <rect x="8" y="23" width="8" height="1" fill="url(#circuitGrad)" rx="0.5"/>
+        <rect x="12" y="8" width="1" height="15" fill="url(#circuitGrad)" rx="0.5"/>
+        <rect x="20" y="8" width="1" height="12" fill="url(#circuitGrad)" rx="0.5"/>
+        <rect x="16" y="11" width="1" height="9" fill="url(#circuitGrad)" rx="0.5"/>
+      </g>
+      <text x="16" y="20" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="white" stroke="rgba(0,0,0,0.3)" stroke-width="0.5">AI</text>
+      <circle cx="10" cy="10" r="1.5" fill="white" opacity="0.8"/>
+      <circle cx="22" cy="10" r="1.5" fill="white" opacity="0.8"/>
+      <circle cx="16" cy="6" r="1.5" fill="white" opacity="0.8"/>
+      <circle cx="10" cy="26" r="1.5" fill="white" opacity="0.8"/>
+      <circle cx="22" cy="26" r="1.5" fill="white" opacity="0.8"/>
+      <line x1="10" y1="10" x2="16" y2="6" stroke="white" stroke-width="0.5" opacity="0.6"/>
+      <line x1="22" y1="10" x2="16" y2="6" stroke="white" stroke-width="0.5" opacity="0.6"/>
+      <line x1="10" y1="10" x2="10" y2="26" stroke="white" stroke-width="0.5" opacity="0.6"/>
+      <line x1="22" y1="10" x2="22" y2="26" stroke="white" stroke-width="0.5" opacity="0.6"/>
     </svg>`;
-    this.proofreadButton.title = contextHint; // Tooltip
+    this.proofreadButton.title = contextHint;
     
     this.proofreadButton.style.cssText = `
       position: absolute;
-      background: #4CAF50;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
       color: white;
       border: 2px solid white;
       border-radius: 50%;
@@ -55,8 +85,8 @@ class TextBoxProofreader {
       z-index: 10000;
       display: none;
       user-select: none;
-      width: 32px;
-      height: 32px;
+      width: 36px;
+      height: 36px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -67,23 +97,93 @@ class TextBoxProofreader {
     // Add hover effect
     this.proofreadButton.addEventListener('mouseenter', () => {
       this.proofreadButton.style.transform = 'scale(1.1)';
-      this.proofreadButton.style.background = '#45a049';
       this.proofreadButton.style.boxShadow = '0 6px 16px rgba(0,0,0,0.4)';
     });
 
     this.proofreadButton.addEventListener('mouseleave', () => {
       this.proofreadButton.style.transform = 'scale(1)';
-      this.proofreadButton.style.background = '#4CAF50';
       this.proofreadButton.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
     });
 
     this.proofreadButton.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
-      this.showContextMenu(e);
+      this.proofreadSelectedText(); // Direct proofreading
     });
 
     document.body.appendChild(this.proofreadButton);
+  }
+
+  createMenuButton() {
+    this.menuButton = document.createElement('div');
+    this.menuButton.id = 'ai-menu-button';
+    
+    const contextHint = 'AI Menu - Suggestions, settings, and options';
+    
+    // Using menu/settings icon
+    this.menuButton.innerHTML = `<svg width="20" height="20" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="menuButtonGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style="stop-color:#4facfe"/>
+          <stop offset="100%" style="stop-color:#00f2fe"/>
+        </linearGradient>
+      </defs>
+      <circle cx="16" cy="16" r="15" fill="url(#menuButtonGrad)" stroke="white" stroke-width="1"/>
+      <g transform="translate(16,16)">
+        <path d="M-8,-3 L-8,-6 L-6,-8 L-3,-8 L-1,-6 L-1,-3 L1,-3 L1,-6 L3,-8 L6,-8 L8,-6 L8,-3 L8,1 L6,3 L8,6 L8,8 L6,8 L3,6 L1,3 L-1,3 L-3,6 L-6,8 L-8,8 L-8,6 L-8,3 Z" 
+              fill="white" opacity="0.3"/>
+        <circle cx="0" cy="0" r="6" fill="white" opacity="0.9"/>
+        <circle cx="0" cy="0" r="3" fill="url(#menuButtonGrad)"/>
+        <rect x="-8" y="-2" width="16" height="1" fill="white" rx="0.5"/>
+        <rect x="-6" y="0" width="12" height="1" fill="white" rx="0.5"/>
+        <rect x="-8" y="2" width="16" height="1" fill="white" rx="0.5"/>
+      </g>
+      <circle cx="24" cy="8" r="4" fill="#ff6b6b" stroke="white" stroke-width="1"/>
+      <text x="24" y="10" font-family="Arial, sans-serif" font-size="4" font-weight="bold" text-anchor="middle" fill="white">AI</text>
+    </svg>`;
+    this.menuButton.title = contextHint;
+    
+    this.menuButton.style.cssText = `
+      position: absolute;
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      color: white;
+      border: 2px solid white;
+      border-radius: 50%;
+      padding: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-family: Arial, sans-serif;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      z-index: 10000;
+      display: none;
+      user-select: none;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(4px);
+    `;
+
+    // Add hover effect
+    this.menuButton.addEventListener('mouseenter', () => {
+      this.menuButton.style.transform = 'scale(1.1)';
+      this.menuButton.style.boxShadow = '0 6px 16px rgba(0,0,0,0.4)';
+    });
+
+    this.menuButton.addEventListener('mouseleave', () => {
+      this.menuButton.style.transform = 'scale(1)';
+      this.menuButton.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+    });
+
+    this.menuButton.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this.showContextMenu(e); // Show menu with options
+    });
+
+    document.body.appendChild(this.menuButton);
   }
 
   attachEventListeners() {
@@ -192,28 +292,30 @@ class TextBoxProofreader {
 
   showProofreadButton(element) {
     const rect = element.getBoundingClientRect();
-    const buttonSize = 32; // Button width/height
+    const buttonSize = 36; // Button width/height (increased for new design)
     const offset = 8; // Spacing from element
+    const buttonSpacing = 4; // Spacing between buttons
     
     this.proofreadButton.style.display = 'flex';
+    this.menuButton.style.display = 'flex';
     
     // Calculate horizontal position - prefer right side of element
     let left = rect.right + offset + window.scrollX;
     
-    // If button would go off right edge of screen, position on left side
-    if (left + buttonSize > window.innerWidth + window.scrollX) {
-      left = rect.left - buttonSize - offset + window.scrollX;
+    // If buttons would go off right edge of screen, position on left side
+    if (left + (buttonSize * 2) + buttonSpacing > window.innerWidth + window.scrollX) {
+      left = rect.left - (buttonSize * 2) - buttonSpacing - offset + window.scrollX;
     }
     
     // If still off screen (element too wide), position inside element on right
     if (left < window.scrollX) {
-      left = rect.right - buttonSize - offset + window.scrollX;
+      left = rect.right - (buttonSize * 2) - buttonSpacing - offset + window.scrollX;
     }
     
     // Calculate vertical position - prefer above element
     let top = rect.top - buttonSize - offset + window.scrollY;
     
-    // If button would go above viewport, position below element
+    // If buttons would go above viewport, position below element
     if (top < window.scrollY) {
       top = rect.bottom + offset + window.scrollY;
     }
@@ -223,12 +325,18 @@ class TextBoxProofreader {
       top = rect.top + offset + window.scrollY;
     }
     
+    // Position AI Proofread button (left button)
     this.proofreadButton.style.left = left + 'px';
     this.proofreadButton.style.top = top + 'px';
+    
+    // Position Menu button (right button)
+    this.menuButton.style.left = (left + buttonSize + buttonSpacing) + 'px';
+    this.menuButton.style.top = top + 'px';
   }
 
   hideProofreadButton() {
     this.proofreadButton.style.display = 'none';
+    this.menuButton.style.display = 'none';
   }
 
   showContextMenu(e) {
@@ -333,24 +441,14 @@ class TextBoxProofreader {
       content.appendChild(toneSelector);
     }
 
-    // Action buttons
+    // Action buttons - removed full proofread since it's now a separate button
     const quickActions = document.createElement('div');
     quickActions.innerHTML = `
-      <button id="ai-full-proofread" title="Proofread & Apply" style="display: inline-block; margin-right: 4px; margin-bottom: 4px; padding: 8px; border: 1px solid #ddd; border-radius: 50%; background: #4CAF50; color: white; cursor: pointer; font-size: 16px; width: 36px; height: 36px;">
-        <svg width="16" height="16" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="16" cy="16" r="15" fill="currentColor"/>
-          <text x="16" y="20" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="white">AI</text>
-          <circle cx="8" cy="8" r="1.5" fill="white" opacity="0.8"/>
-          <circle cx="24" cy="8" r="1.5" fill="white" opacity="0.8"/>
-          <circle cx="8" cy="24" r="1.5" fill="white" opacity="0.8"/>
-          <circle cx="24" cy="24" r="1.5" fill="white" opacity="0.8"/>
-        </svg>
+      <button id="ai-get-suggestions" title="Get Suggestions Only" style="display: inline-block; margin-right: 8px; margin-bottom: 8px; padding: 12px; border: 1px solid #ddd; border-radius: 8px; background: #2196F3; color: white; cursor: pointer; font-size: 14px; min-width: 120px;">
+        💡 Get Suggestions
       </button>
-      <button id="ai-get-suggestions" title="Get Suggestions Only" style="display: inline-block; margin-right: 4px; margin-bottom: 4px; padding: 8px; border: 1px solid #ddd; border-radius: 50%; background: #2196F3; color: white; cursor: pointer; font-size: 16px; width: 36px; height: 36px;">
-        💡
-      </button>
-      <button id="ai-settings" title="Extension Settings" style="display: inline-block; margin-bottom: 4px; padding: 8px; border: 1px solid #ddd; border-radius: 50%; background: #f5f5f5; cursor: pointer; font-size: 16px; width: 36px; height: 36px;">
-        ⚙️
+      <button id="ai-settings" title="Extension Settings" style="display: inline-block; margin-bottom: 8px; padding: 12px; border: 1px solid #ddd; border-radius: 8px; background: #9E9E9E; color: white; cursor: pointer; font-size: 14px; min-width: 120px;">
+        ⚙️ Settings
       </button>
     `;
 
@@ -358,11 +456,6 @@ class TextBoxProofreader {
     this.suggestionPanel.appendChild(content);
 
     // Add event listeners
-    quickActions.querySelector('#ai-full-proofread').addEventListener('click', () => {
-      this.proofreadSelectedText();
-      this.hideSuggestionPanel();
-    });
-
     quickActions.querySelector('#ai-get-suggestions').addEventListener('click', () => {
       this.getSuggestions();
       this.hideSuggestionPanel();

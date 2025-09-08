@@ -1,0 +1,33 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bookGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4A90E2"/>
+      <stop offset="100%" style="stop-color:#357ABD"/>
+    </linearGradient>
+    <linearGradient id="aiGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF6B6B"/>
+      <stop offset="50%" style="stop-color:#4ECDC4"/>
+      <stop offset="100%" style="stop-color:#45B7D1"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Book -->
+  <rect x="20" y="25" width="75" height="80" rx="5" fill="url(#bookGrad)" stroke="#2E5F8A" stroke-width="2"/>
+  <rect x="25" y="30" width="65" height="70" rx="3" fill="white" stroke="#E0E0E0"/>
+  
+  <!-- Text lines -->
+  <line x1="32" y1="45" x2="75" y2="45" stroke="#DDD" stroke-width="2"/>
+  <line x1="32" y1="55" x2="83" y2="55" stroke="#DDD" stroke-width="2"/>
+  <line x1="32" y1="75" x2="78" y2="75" stroke="#DDD" stroke-width="2"/>
+  <line x1="32" y1="85" x2="70" y2="85" stroke="#DDD" stroke-width="2"/>
+  
+  <!-- AI Circle -->
+  <circle cx="64" cy="64" r="22" fill="url(#aiGrad)" stroke="white" stroke-width="3"/>
+  <text x="64" y="72" font-family="Arial, sans-serif" font-size="20" font-weight="bold" 
+        text-anchor="middle" fill="white">AI</text>
+  
+  <!-- Sparkles -->
+  <circle cx="85" cy="40" r="3" fill="#FFD700"/>
+  <circle cx="100" cy="60" r="2" fill="#FF6B6B"/>
+  <circle cx="35" cy="90" r="2" fill="#4ECDC4"/>
+</svg>

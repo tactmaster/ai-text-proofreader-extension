@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SVG to PNG Converter - AI Text Proofreader Icons</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .icon-set {
+            display: flex;
+            gap: 30px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .icon-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            background: #fafafa;
+        }
+        .icon-preview {
+            margin: 10px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: white;
+            border-radius: 4px;
+            padding: 10px;
+        }
+        canvas {
+            border: 1px solid #ddd;
+            background: white;
+        }
+        button {
+            background: #4A90E2;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #357ABD;
+        }
+        .instructions {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #4A90E2;
+            padding-bottom: 10px;
+        }
+        .size-label {
+            font-weight: bold;
+            color: #666;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 AI Text Proofreader - Icon Converter</h1>
+        
+        <div class="instructions">
+            <h3>📋 Instructions:</h3>
+            <ol>
+                <li>Click "Generate PNG" for each size</li>
+                <li>Right-click on the canvas → "Save image as..."</li>
+                <li>Save with exact filenames: <code>icon16.png</code>, <code>icon48.png</code>, <code>icon128.png</code></li>
+                <li>Place PNG files in the <code>icons/</code> folder</li>
+            </ol>
+        </div>
+
+        <div class="icon-set">
+            <!-- 16x16 Icon -->
+            <div class="icon-card">
+                <div class="size-label">16x16 - Toolbar Icon</div>
+                <div class="icon-preview">
+                    <canvas id="canvas16" width="16" height="16"></canvas>
+                </div>
+                <button onclick="generateIcon(16)">Generate PNG</button>
+                <div>Save as: <strong>icon16.png</strong></div>
+            </div>
+
+            <!-- 48x48 Icon -->
+            <div class="icon-card">
+                <div class="size-label">48x48 - Management Page</div>
+                <div class="icon-preview">
+                    <canvas id="canvas48" width="48" height="48"></canvas>
+                </div>
+                <button onclick="generateIcon(48)">Generate PNG</button>
+                <div>Save as: <strong>icon48.png</strong></div>
+            </div>
+
+            <!-- 128x128 Icon -->
+            <div class="icon-card">
+                <div class="size-label">128x128 - Store & Install</div>
+                <div class="icon-preview">
+                    <canvas id="canvas128" width="128" height="128"></canvas>
+                </div>
+                <button onclick="generateIcon(128)">Generate PNG</button>
+                <div>Save as: <strong>icon128.png</strong></div>
+            </div>
+        </div>
+
+        <button onclick="generateAllIcons()" style="background: #4CAF50; font-size: 16px; padding: 12px 24px;">
+            🚀 Generate All Icons
+        </button>
+    </div>
+
+    <script>
+        function drawIcon(canvas, size) {
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, size, size);
+            
+            // Scale factors for different sizes
+            const scale = size / 128;
+            
+            // Book dimensions
+            const bookX = 20 * scale;
+            const bookY = 25 * scale;
+            const bookW = 75 * scale;
+            const bookH = 80 * scale;
+            const bookRadius = 5 * scale;
+            
+            // Book shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.2)';
+            ctx.beginPath();
+            ctx.ellipse(size/2, size * 0.9, 45 * scale, 8 * scale, 0, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Book cover gradient
+            const bookGrad = ctx.createLinearGradient(bookX, bookY, bookX + bookW, bookY + bookH);
+            bookGrad.addColorStop(0, '#4A90E2');
+            bookGrad.addColorStop(1, '#357ABD');
+            
+            // Draw book
+            ctx.fillStyle = bookGrad;
+            ctx.beginPath();
+            ctx.roundRect(bookX, bookY, bookW, bookH, bookRadius);
+            ctx.fill();
+            
+            ctx.strokeStyle = '#2E5F8A';
+            ctx.lineWidth = 2 * scale;
+            ctx.stroke();
+            
+            // White page
+            const pageX = bookX + 5 * scale;
+            const pageY = bookY + 5 * scale;
+            const pageW = bookW - 10 * scale;
+            const pageH = bookH - 10 * scale;
+            
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.roundRect(pageX, pageY, pageW, pageH, 3 * scale);
+            ctx.fill();
+            
+            ctx.strokeStyle = '#E0E0E0';
+            ctx.lineWidth = 1 * scale;
+            ctx.stroke();
+            
+            // Text lines (only for larger sizes)
+            if (size >= 48) {
+                ctx.strokeStyle = '#DDD';
+                ctx.lineWidth = 2 * scale;
+                const lineX1 = pageX + 7 * scale;
+                const lineX2 = pageX + pageW - 7 * scale;
+                
+                [20, 30, 50, 60].forEach((y, i) => {
+                    const lineY = bookY + y * scale;
+                    ctx.beginPath();
+                    ctx.moveTo(lineX1, lineY);
+                    ctx.lineTo(lineX2 - (i % 2 === 0 ? 10 * scale : 0), lineY);
+                    ctx.stroke();
+                });
+            }
+            
+            // AI Circle
+            const aiX = size / 2;
+            const aiY = size / 2;
+            const aiRadius = 22 * scale;
+            
+            const aiGrad = ctx.createLinearGradient(aiX - aiRadius, aiY - aiRadius, aiX + aiRadius, aiY + aiRadius);
+            aiGrad.addColorStop(0, '#FF6B6B');
+            aiGrad.addColorStop(0.5, '#4ECDC4');
+            aiGrad.addColorStop(1, '#45B7D1');
+            
+            ctx.fillStyle = aiGrad;
+            ctx.beginPath();
+            ctx.arc(aiX, aiY, aiRadius, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 3 * scale;
+            ctx.stroke();
+            
+            // AI Text
+            ctx.fillStyle = 'white';
+            ctx.font = `bold ${20 * scale}px Arial, sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('AI', aiX, aiY);
+            
+            // Sparkles (only for larger sizes)
+            if (size >= 48) {
+                const sparkles = [
+                    {x: 85 * scale, y: 40 * scale, r: 3 * scale, color: '#FFD700'},
+                    {x: 100 * scale, y: 60 * scale, r: 2 * scale, color: '#FF6B6B'},
+                    {x: 35 * scale, y: 90 * scale, r: 2 * scale, color: '#4ECDC4'}
+                ];
+                
+                sparkles.forEach(sparkle => {
+                    if (sparkle.x < size && sparkle.y < size) {
+                        ctx.fillStyle = sparkle.color;
+                        ctx.beginPath();
+                        ctx.arc(sparkle.x, sparkle.y, sparkle.r, 0, 2 * Math.PI);
+                        ctx.fill();
+                    }
+                });
+            }
+        }
+        
+        function generateIcon(size) {
+            const canvas = document.getElementById(`canvas${size}`);
+            drawIcon(canvas, size);
+        }
+        
+        function generateAllIcons() {
+            [16, 48, 128].forEach(size => generateIcon(size));
+        }
+        
+        // Auto-generate on page load
+        window.onload = generateAllIcons;
+    </script>
+</body>
+</html>
