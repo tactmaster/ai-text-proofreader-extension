@@ -12,6 +12,13 @@ class TextBoxProofreader {
   }
 
   async init() {
+    // Check if Chrome extension APIs are available
+    if (!chrome || !chrome.runtime) {
+      console.error('[AI Proofreader] Chrome extension APIs not available');
+      console.error('[AI Proofreader] Make sure the extension is properly loaded');
+      return;
+    }
+
     await this.initializeContext();
     this.createProofreadButton();
     this.createMenuButton();
@@ -495,6 +502,13 @@ class TextBoxProofreader {
   async proofreadSelectedText() {
     if (!this.selectedElement) return;
 
+    // Check if chrome.runtime is available
+    if (!chrome || !chrome.runtime) {
+      console.error('[AI Proofreader] Chrome runtime not available');
+      this.showErrorMessage('Extension runtime not available. Please reload the extension.');
+      return;
+    }
+
     const text = this.getElementText(this.selectedElement);
     if (!text.trim()) {
       alert('No text to proofread');
@@ -541,6 +555,13 @@ class TextBoxProofreader {
 
   async getSuggestions() {
     if (!this.selectedElement) return;
+
+    // Check if chrome.runtime is available
+    if (!chrome || !chrome.runtime) {
+      console.error('[AI Proofreader] Chrome runtime not available');
+      this.showErrorMessage('Extension runtime not available. Please reload the extension.');
+      return;
+    }
 
     const text = this.getElementText(this.selectedElement);
     if (!text.trim()) {
@@ -737,10 +758,31 @@ class TextBoxProofreader {
 }
 
 // Initialize the proofreader when page loads
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
+function initializeExtension() {
+  try {
+    // Check if Chrome extension context is available
+    if (typeof chrome === 'undefined' || !chrome.runtime) {
+      console.error('[AI Proofreader] Chrome extension context not available');
+      console.error('[AI Proofreader] Please reload the extension and refresh this page');
+      return;
+    }
+
+    // Check if runtime is connected
+    if (!chrome.runtime.id) {
+      console.error('[AI Proofreader] Extension runtime disconnected');
+      console.error('[AI Proofreader] Please reload the extension');
+      return;
+    }
+
+    console.log('[AI Proofreader] Initializing extension...');
     new TextBoxProofreader();
-  });
+  } catch (error) {
+    console.error('[AI Proofreader] Failed to initialize:', error);
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeExtension);
 } else {
-  new TextBoxProofreader();
+  initializeExtension();
 }
