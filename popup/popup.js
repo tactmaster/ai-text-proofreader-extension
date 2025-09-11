@@ -7,12 +7,6 @@ class PopupController {
   }
 
   init() {
-    console.log('Popup init starting...');
-    console.log('browserAPI available:', typeof browserAPI);
-    console.log('window.browserAPI available:', typeof window.browserAPI);
-    console.log('chrome available:', typeof chrome);
-    console.log('browser available:', typeof browser);
-    
     // Wait for DOM to be ready
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', () => {
@@ -24,7 +18,6 @@ class PopupController {
   }
 
   initializeAfterDOM() {
-    console.log('Initializing after DOM ready...');
     this.setupTabs();
     this.setupEventListeners();
     
@@ -166,9 +159,6 @@ class PopupController {
 
   async loadSettings() {
     try {
-      console.log('Loading settings...');
-      console.log('browserAPI in loadSettings:', browserAPI);
-      
       if (!browserAPI) {
         throw new Error('browserAPI is not defined');
       }
