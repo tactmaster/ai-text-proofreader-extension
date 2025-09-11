@@ -55,6 +55,11 @@ class BrowserAPI {
 
   // Runtime API abstraction
   get runtime() {
+    if (!this.api || !this.api.runtime) {
+      console.error('[BrowserAPI] Runtime API not available');
+      return null;
+    }
+    
     return {
       sendMessage: (...args) => {
         if (this.isFirefox) {
@@ -71,9 +76,12 @@ class BrowserAPI {
           });
         }
       },
-      onMessage: {
+      onMessage: this.api.runtime.onMessage ? {
         addListener: (callback) => this.api.runtime.onMessage.addListener(callback)
-      }
+      } : null,
+      onInstalled: this.api.runtime.onInstalled ? {
+        addListener: (callback) => this.api.runtime.onInstalled.addListener(callback)
+      } : null
     };
   }
 
@@ -1295,81 +1303,89 @@ Suggestions:`;
 const proofreader = new LLMProofreader();
 
 // Handle messages from content script and popup
-browserAPI.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  console.log(`[DEBUG] Received message:`, request);
-  
-  switch (request.action) {
-    case 'proofread':
-      proofreader.proofreadText(request.text)
-        .then(correctedText => {
-          sendResponse({ success: true, correctedText });
-        })
-        .catch(error => {
-          sendResponse({ success: false, error: error.message });
-        });
-      return true; // Will respond asynchronously
+if (browserAPI && browserAPI.runtime && browserAPI.runtime.onMessage) {
+  browserAPI.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    console.log(`[DEBUG] Received message:`, request);
+    
+    switch (request.action) {
+      case 'proofread':
+        proofreader.proofreadText(request.text)
+          .then(correctedText => {
+            sendResponse({ success: true, correctedText });
+          })
+          .catch(error => {
+            sendResponse({ success: false, error: error.message });
+          });
+        return true; // Will respond asynchronously
 
-    case 'proofreadWithContext':
-      proofreader.proofreadTextWithContext(request.text, request.context)
-        .then(correctedText => {
-          sendResponse({ success: true, correctedText });
-        })
-        .catch(error => {
-          sendResponse({ success: false, error: error.message });
-        });
-      return true; // Will respond asynchronously
+      case 'proofreadWithContext':
+        proofreader.proofreadTextWithContext(request.text, request.context)
+          .then(correctedText => {
+            sendResponse({ success: true, correctedText });
+          })
+          .catch(error => {
+            sendResponse({ success: false, error: error.message });
+          });
+        return true; // Will respond asynchronously
 
-    case 'getSuggestions':
-      proofreader.getSuggestions(request.text)
-        .then(suggestions => {
-          sendResponse({ success: true, suggestions });
-        })
-        .catch(error => {
-          sendResponse({ success: false, error: error.message });
-        });
-      return true; // Will respond asynchronously
+      case 'getSuggestions':
+        proofreader.getSuggestions(request.text)
+          .then(suggestions => {
+            sendResponse({ success: true, suggestions });
+          })
+          .catch(error => {
+            sendResponse({ success: false, error: error.message });
+          });
+        return true; // Will respond asynchronously
 
-    case 'getSuggestionsWithContext':
-      proofreader.getSuggestionsWithContext(request.text, request.context)
-        .then(suggestions => {
-          sendResponse({ success: true, suggestions });
-        })
-        .catch(error => {
-          sendResponse({ success: false, error: error.message });
-        });
-      return true; // Will respond asynchronously
+      case 'getSuggestionsWithContext':
+        proofreader.getSuggestionsWithContext(request.text, request.context)
+          .then(suggestions => {
+            sendResponse({ success: true, suggestions });
+          })
+          .catch(error => {
+            sendResponse({ success: false, error: error.message });
+          });
+        return true; // Will respond asynchronously
 
-    case 'getSettings':
-      sendResponse({ settings: proofreader.settings });
-      break;
+      case 'getSettings':
+        sendResponse({ settings: proofreader.settings });
+        break;
 
-    case 'saveSettings':
-      proofreader.saveSettings(request.settings)
-        .then(() => {
-          sendResponse({ success: true });
-        })
-        .catch(error => {
-          sendResponse({ success: false, error: error.message });
-        });
-      return true; // Will respond asynchronously
+      case 'saveSettings':
+        proofreader.saveSettings(request.settings)
+          .then(() => {
+            sendResponse({ success: true });
+          })
+          .catch(error => {
+            sendResponse({ success: false, error: error.message });
+          });
+        return true; // Will respond asynchronously
 
-    case 'testConnection':
-      proofreader.testConnection()
-        .then(result => {
-          sendResponse(result);
-        })
-        .catch(error => {
-          sendResponse({ success: false, error: error.message });
-        });
-      return true; // Will respond asynchronously
+      case 'testConnection':
+        proofreader.testConnection()
+          .then(result => {
+            sendResponse(result);
+          })
+          .catch(error => {
+            sendResponse({ success: false, error: error.message });
+          });
+        return true; // Will respond asynchronously
 
-    default:
-      console.warn(`[WARNING] Unknown action: ${request.action}`);
-      sendResponse({ success: false, error: 'Unknown action' });
-  }
-});
+      default:
+        console.warn(`[WARNING] Unknown action: ${request.action}`);
+        sendResponse({ success: false, error: 'Unknown action' });
+    }
+  });
+} else {
+  console.error('[AI Proofreader] Cannot set up message listener: browserAPI.runtime.onMessage not available');
+}
 
 // Handle extension installation
-browserAPI.runtime.onInstalled.addListener(() => {
-  console.log('AI Text Proofreader extension installed');
-});
+if (browserAPI && browserAPI.runtime && browserAPI.runtime.onInstalled) {
+  browserAPI.runtime.onInstalled.addListener(() => {
+    console.log('AI Text Proofreader extension installed');
+  });
+} else {
+  console.error('[AI Proofreader] Cannot set up onInstalled listener: browserAPI.runtime.onInstalled not available');
+}

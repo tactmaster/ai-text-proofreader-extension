@@ -281,6 +281,97 @@ describe('Extension Integration Error Tests', () => {
       };
     });
     
+    test('should handle service worker registration failures', () => {
+      // Test the background script initialization with missing API components
+      class MockBrowserAPI {
+        constructor() {
+          this.api = this.detectBrowserAPI();
+          this.isChromium = this.api === chrome;
+          this.isFirefox = typeof browser !== 'undefined' && browser.runtime;
+        }
+
+        detectBrowserAPI() {
+          if (typeof browser !== 'undefined' && browser.runtime) {
+            return browser;
+          }
+          if (typeof chrome !== 'undefined' && chrome.runtime) {
+            return chrome;
+          }
+          throw new Error('No compatible browser extension API found');
+        }
+
+        get runtime() {
+          if (!this.api || !this.api.runtime) {
+            console.error('[BrowserAPI] Runtime API not available');
+            return null;
+          }
+          
+          return {
+            sendMessage: (...args) => this.api.runtime.sendMessage(...args),
+            onMessage: this.api.runtime.onMessage ? {
+              addListener: (callback) => this.api.runtime.onMessage.addListener(callback)
+            } : null,
+            onInstalled: this.api.runtime.onInstalled ? {
+              addListener: (callback) => this.api.runtime.onInstalled.addListener(callback)
+            } : null
+          };
+        }
+
+        isExtensionContext() {
+          return !!(this.api && this.api.runtime && this.api.runtime.id);
+        }
+      }
+
+      // Test with missing onMessage API (the addListener error scenario)
+      const originalChrome = global.chrome;
+      global.chrome = {
+        runtime: {
+          sendMessage: jest.fn()
+          // Missing onMessage property - this causes the addListener error
+        }
+      };
+
+      let browserAPI;
+      let initializationErrors = [];
+      const mockConsoleError = jest.fn((message) => initializationErrors.push(message));
+      console.error = mockConsoleError;
+
+      try {
+        browserAPI = new MockBrowserAPI();
+      } catch (error) {
+        console.error('[AI Proofreader] Background: Browser API initialization failed:', error.message);
+        browserAPI = null;
+      }
+
+      // Simulate the background script trying to set up listeners
+      if (browserAPI && browserAPI.runtime && browserAPI.runtime.onMessage) {
+        browserAPI.runtime.onMessage.addListener(() => {});
+      } else {
+        console.error('[AI Proofreader] Cannot set up message listener: browserAPI.runtime.onMessage not available');
+      }
+
+      if (browserAPI && browserAPI.runtime && browserAPI.runtime.onInstalled) {
+        browserAPI.runtime.onInstalled.addListener(() => {});
+      } else {
+        console.error('[AI Proofreader] Cannot set up onInstalled listener: browserAPI.runtime.onInstalled not available');
+      }
+
+      // Should have logged appropriate error messages
+      expect(initializationErrors.some(msg => 
+        msg.includes('Cannot set up message listener') || 
+        msg.includes('Runtime API not available')
+      )).toBe(true);
+
+      expect(initializationErrors.some(msg => 
+        msg.includes('Cannot set up onInstalled listener') || 
+        msg.includes('Runtime API not available')
+      )).toBe(true);
+
+      // Restore chrome
+      global.chrome = originalChrome;
+      console.error.mockRestore();
+    });
+    
     test('should handle rapid successive API calls with runtime errors', async () => {
       // Mock sendMessage to fail intermittently
       let callCount = 0;
