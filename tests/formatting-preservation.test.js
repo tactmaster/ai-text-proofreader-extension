@@ -210,7 +210,11 @@ I hope this helps! Let me know if you need anything else.`;
         `Corrected version:\n${inputText}\nAll fixed.`,
         `OUTPUT:\n${inputText}`,
         `Here you go:\n\n${inputText}\n\nAnything else?`,
-        `The fixed text is:\n${inputText}\nHope this helps!`
+        `The fixed text is:\n${inputText}\nHope this helps!`,
+        // Test the specific reported issue
+        `Sure, here is the corrected email:\n\n${inputText}`,
+        `Here is the corrected email:\n${inputText}`,
+        `Corrected email:\n${inputText}`
       ];
       
       wrappers.forEach(wrappedResponse => {

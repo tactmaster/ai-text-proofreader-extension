@@ -1048,6 +1048,8 @@ Quick test: Visit http://127.0.0.1:11434 in your browser`);
       return response;
     }
 
+    console.log('[DEBUG] Original response:', JSON.stringify(response.substring(0, 200) + (response.length > 200 ? '...' : '')));
+    
     let cleaned = response.trim();
     
     // Remove common wrapper phrases (case insensitive)
@@ -1061,6 +1063,7 @@ Quick test: Visit http://127.0.0.1:11434 in your browser`);
       /^revised\s+text:?\s*/i,
       /^the\s+corrected?\s+text\s+is:?\s*/i,
       /^the\s+improved\s+text\s+is:?\s*/i,
+      /^the\s+fixed\s+text\s+is:?\s*/i,
       /^here\s+you\s+go:?\s*/i,
       /^here\s+it\s+is:?\s*/i,
       /^sure[,!]?\s+here\s+is\s+the\s+corrected?\s+text:?\s*/i,
@@ -1073,7 +1076,17 @@ Quick test: Visit http://127.0.0.1:11434 in your browser`);
       /^here'?s\s+an?\s+improved\s+version:?\s*/i,
       /^here'?s\s+the\s+proofread\s+text:?\s*/i,
       /^let\s+me\s+help.*?:?\s*/i,
-      /^i\s+can\s+help.*?:?\s*/i
+      /^i\s+can\s+help.*?:?\s*/i,
+      // Additional patterns for specific reported issues
+      /^sure[,!]?\s+here\s+is\s+the\s+corrected?\s+email:?\s*/i,
+      /^here\s+is\s+the\s+corrected?\s+email:?\s*/i,
+      /^corrected?\s+email:?\s*/i,
+      /^here\s+is\s+your\s+corrected?\s+(?:text|email|message):?\s*/i,
+      /^your\s+corrected?\s+(?:text|email|message):?\s*/i,
+      /^corrected?\s+version:?\s*/i,
+      /^improved?\s+version:?\s*/i,
+      /^output:?\s*/i,
+      /^result:?\s*/i
     ];
 
     // Remove wrapper phrases from the beginning
@@ -1106,6 +1119,16 @@ Quick test: Visit http://127.0.0.1:11434 in your browser`);
     // Remove markdown code blocks if present
     cleaned = cleaned.replace(/^```[\w]*\s*\n?/, '').replace(/\n?```\s*$/, '');
 
+    // Remove trailing wrapper phrases
+    const trailingPhrases = [
+      /\s*(?:hope this helps|let me know|anything else|done|all fixed|perfect|great|looks good|i hope this.*?)(?:[!.?]*)?[\s\n]*$/i,
+      /\s*(?:hope that helps|is that better|how does that look|does this work|is this what you wanted)(?:[!.?]*)?[\s\n]*$/i
+    ];
+
+    for (const phrase of trailingPhrases) {
+      cleaned = cleaned.replace(phrase, '');
+    }
+
     // Preserve formatting by only removing excessive leading/trailing whitespace
     // Remove only excessive leading/trailing blank lines, but preserve intentional newlines
     cleaned = cleaned.replace(/^\n{3,}/, '\n\n').replace(/\n{3,}$/, '\n\n');
@@ -1117,6 +1140,8 @@ Quick test: Visit http://127.0.0.1:11434 in your browser`);
     if (!cleaned.trim()) {
       return '';
     }
+    
+    console.log('[DEBUG] Cleaned response:', JSON.stringify(cleaned.substring(0, 200) + (cleaned.length > 200 ? '...' : '')));
     
     return cleaned;
   }

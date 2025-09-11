@@ -7,24 +7,45 @@ const WEBSITE_CONTEXTS = {
     name: 'Gmail',
     type: 'email',
     prompts: {
-      formal: `INSTRUCTION: Fix grammar and spelling in this professional email. Output ONLY the corrected text. PRESERVE all original formatting including newlines, bullet points, numbered lists, and paragraph breaks.
+      formal: `CRITICAL INSTRUCTION: Fix grammar and spelling in this professional email. 
+
+STRICT RULES:
+- Output ONLY the corrected text, nothing else
+- Do NOT add "Here is the corrected email:" or any similar phrases
+- Do NOT add explanations, greetings, or conversational text
+- PRESERVE all original formatting including newlines, bullet points, numbered lists, and paragraph breaks
+- Start your response immediately with the corrected content
 
 INPUT TEXT:
 "{{TEXT}}"
 
-OUTPUT (corrected email only):`,
-      casual: `INSTRUCTION: Fix grammar and spelling in this casual email. Output ONLY the corrected text. PRESERVE all original formatting including newlines, bullet points, numbered lists, and paragraph breaks.
+CORRECTED TEXT:`,
+      casual: `CRITICAL INSTRUCTION: Fix grammar and spelling in this casual email.
+
+STRICT RULES:
+- Output ONLY the corrected text, nothing else
+- Do NOT add "Here is the corrected email:" or any similar phrases  
+- Do NOT add explanations, greetings, or conversational text
+- PRESERVE all original formatting including newlines, bullet points, numbered lists, and paragraph breaks
+- Start your response immediately with the corrected content
 
 INPUT TEXT:
 "{{TEXT}}"
 
-OUTPUT (corrected email only):`,
-      default: `INSTRUCTION: Fix grammar and spelling in this email. Output ONLY the corrected text. PRESERVE all original formatting including newlines, bullet points, numbered lists, and paragraph breaks.
+CORRECTED TEXT:`,
+      default: `CRITICAL INSTRUCTION: Fix grammar and spelling in this email.
+
+STRICT RULES:
+- Output ONLY the corrected text, nothing else
+- Do NOT add "Here is the corrected email:" or any similar phrases
+- Do NOT add explanations, greetings, or conversational text  
+- PRESERVE all original formatting including newlines, bullet points, numbered lists, and paragraph breaks
+- Start your response immediately with the corrected content
 
 INPUT TEXT:
 "{{TEXT}}"
 
-OUTPUT (corrected email only):`
+CORRECTED TEXT:`
     },
     settings: {
       showToneOptions: true,
@@ -161,12 +182,19 @@ OUTPUT (corrected text only):`
     name: 'General',
     type: 'general',
     prompts: {
-      default: `INSTRUCTION: Correct spelling and grammar errors in the text below. Output ONLY the corrected text. PRESERVE all original formatting including newlines, bullet points, numbered lists, and paragraph breaks. Do NOT include any introductory phrases, explanations, or conversational text.
+      default: `CRITICAL INSTRUCTION: Correct spelling and grammar errors in the text below.
+
+STRICT RULES:
+- Output ONLY the corrected text, nothing else
+- Do NOT add "Here is the corrected text/email:" or any similar phrases
+- Do NOT add explanations, greetings, or conversational text
+- PRESERVE all original formatting including newlines, bullet points, numbered lists, and paragraph breaks
+- Start your response immediately with the corrected content
 
 INPUT TEXT:
 "{{TEXT}}"
 
-OUTPUT (corrected text only):`
+CORRECTED TEXT:`
     },
     settings: {
       showToneOptions: false,
