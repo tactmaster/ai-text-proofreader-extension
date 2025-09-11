@@ -1,6 +1,6 @@
 {
   "name": "ai-text-proofreader",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Chrome extension that uses AI/LLM to proofread and correct text in web page input fields",
   "main": "manifest.json",
   "scripts": {
