@@ -9,6 +9,7 @@
     "build:chrome": "echo 'Building Chrome/Edge package...' && powershell -ExecutionPolicy Bypass -File scripts/build-multi-browser.ps1",
     "build:firefox": "echo 'Building Firefox package...' && powershell -ExecutionPolicy Bypass -File scripts/build-multi-browser.ps1",
     "test": "jest",
+    "test:ci": "jest --testPathIgnorePatterns=browser-api.test.js --testPathIgnorePatterns=word-integration.test.js",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:formatting": "jest tests/formatting-preservation.test.js --verbose",
