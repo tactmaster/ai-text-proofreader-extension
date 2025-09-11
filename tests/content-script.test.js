@@ -161,7 +161,7 @@ describe('Content Script Functionality Tests', () => {
       const top = targetRect.top + (targetRect.height - buttonSize) / 2;
 
       expect(left).toBe(308); // 100 + 200 + 8
-      expect(top).toBe(85);   // 100 + (50 - 40) / 2
+      expect(top).toBe(105);  // 100 + (50 - 40) / 2 = 100 + 5
     });
 
     test('should handle viewport boundaries', () => {

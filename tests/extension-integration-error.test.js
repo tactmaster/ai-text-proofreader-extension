@@ -226,7 +226,7 @@ describe('Extension Integration Error Tests', () => {
 
         async init() {
           try {
-            if (!chrome || !chrome.runtime) {
+            if (typeof chrome === 'undefined' || !chrome || !chrome.runtime) {
               console.error('[AI Proofreader] Chrome extension APIs not available');
               this.initializationFailed = true;
               return;
@@ -267,6 +267,19 @@ describe('Extension Integration Error Tests', () => {
   });
 
   describe('Edge Case Error Handling', () => {
+    
+    beforeEach(() => {
+      // Set up chrome mock for this describe block
+      global.chrome = {
+        runtime: {
+          sendMessage: jest.fn(),
+          onMessage: {
+            addListener: jest.fn(),
+            removeListener: jest.fn()
+          }
+        }
+      };
+    });
     
     test('should handle rapid successive API calls with runtime errors', async () => {
       // Mock sendMessage to fail intermittently
@@ -356,7 +369,7 @@ describe('Extension Integration Error Tests', () => {
         }
 
         init() {
-          if (!chrome || !chrome.runtime) {
+          if (typeof chrome === 'undefined' || !chrome || !chrome.runtime) {
             console.error('[AI Proofreader] Initialization failed - cleaning up');
             this.cleanup();
             return;

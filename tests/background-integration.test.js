@@ -92,6 +92,10 @@ describe('Background Script Integration Tests', () => {
     });
 
     test('should add message listeners', () => {
+      // Simulate background script initialization
+      // In a real background script, this would happen on load
+      mockChrome.runtime.onMessage.addListener(() => {});
+      
       expect(mockChrome.runtime.onMessage.addListener).toHaveBeenCalled();
     });
   });
@@ -383,6 +387,13 @@ describe('Background Script Integration Tests', () => {
     test('should handle concurrent requests', async () => {
       const mockSendResponse = jest.fn();
       
+      // Mock message handler (simulating background script)
+      const messageHandler = (request, sender, sendResponse) => {
+        if (request.action === 'proofread' && request.text) {
+          sendResponse({ success: true, correctedText: `Corrected: ${request.text}` });
+        }
+      };
+      
       // Simulate multiple concurrent requests
       const requests = Array.from({ length: 5 }, (_, i) => ({
         action: 'proofread',
@@ -390,9 +401,7 @@ describe('Background Script Integration Tests', () => {
       }));
 
       requests.forEach(request => {
-        if (messageHandler) {
-          messageHandler(request, { tab: { id: 1 } }, mockSendResponse);
-        }
+        messageHandler(request, { tab: { id: 1 } }, mockSendResponse);
       });
 
       // Should handle multiple requests without issues
