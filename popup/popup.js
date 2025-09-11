@@ -7,10 +7,43 @@ class PopupController {
   }
 
   init() {
+    console.log('Popup init starting...');
+    console.log('browserAPI available:', typeof browserAPI);
+    console.log('window.browserAPI available:', typeof window.browserAPI);
+    console.log('chrome available:', typeof chrome);
+    console.log('browser available:', typeof browser);
+    
+    // Wait for DOM to be ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => {
+        this.initializeAfterDOM();
+      });
+    } else {
+      this.initializeAfterDOM();
+    }
+  }
+
+  initializeAfterDOM() {
+    console.log('Initializing after DOM ready...');
     this.setupTabs();
     this.setupEventListeners();
-    this.loadSettings();
-    this.loadContextSettings();
+    
+    // Ensure browserAPI is available before loading settings
+    if (browserAPI) {
+      this.loadSettings();
+      this.loadContextSettings();
+    } else {
+      console.error('browserAPI not available, retrying in 100ms...');
+      setTimeout(() => {
+        if (browserAPI) {
+          this.loadSettings();
+          this.loadContextSettings();
+        } else {
+          console.error('browserAPI still not available after retry');
+        }
+      }, 100);
+    }
+    
     console.log('AI Text Proofreader popup loaded');
   }
 
@@ -133,6 +166,13 @@ class PopupController {
 
   async loadSettings() {
     try {
+      console.log('Loading settings...');
+      console.log('browserAPI in loadSettings:', browserAPI);
+      
+      if (!browserAPI) {
+        throw new Error('browserAPI is not defined');
+      }
+      
       const response = await browserAPI.runtime.sendMessage({ action: 'getSettings' });
       const settings = response.settings;
 

@@ -154,8 +154,10 @@ class BrowserAPI {
 let browserAPI;
 try {
   browserAPI = new BrowserAPI();
+  console.log('[AI Proofreader] Browser API initialized successfully');
 } catch (error) {
   console.warn('[AI Proofreader] Browser API not available:', error.message);
+  console.warn('[AI Proofreader] This may be normal during extension initialization');
   browserAPI = null;
 }
 
@@ -166,4 +168,17 @@ if (typeof module !== 'undefined' && module.exports) {
   // Global assignment for browser environment
   window.browserAPI = browserAPI;
   window.BrowserAPI = BrowserAPI;
+  
+  // If browserAPI failed to initialize, try again after a short delay
+  if (!browserAPI) {
+    setTimeout(() => {
+      try {
+        browserAPI = new BrowserAPI();
+        window.browserAPI = browserAPI;
+        console.log('[AI Proofreader] Browser API initialized on retry');
+      } catch (retryError) {
+        console.error('[AI Proofreader] Browser API failed to initialize on retry:', retryError.message);
+      }
+    }, 50);
+  }
 }

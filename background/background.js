@@ -3,6 +3,96 @@
 // Import browser API abstraction (loaded via manifest)
 // This provides cross-browser compatibility for Chrome, Edge, and Firefox
 
+// Cross-browser API abstraction for background script
+class BrowserAPI {
+  constructor() {
+    // Detect browser and API availability
+    this.api = this.detectBrowserAPI();
+    this.isChromium = this.api === chrome;
+    this.isFirefox = typeof browser !== 'undefined' && browser.runtime;
+  }
+
+  detectBrowserAPI() {
+    // Firefox uses browser.* API
+    if (typeof browser !== 'undefined' && browser.runtime) {
+      return browser;
+    }
+    
+    // Chrome/Edge uses chrome.* API
+    if (typeof chrome !== 'undefined' && chrome.runtime) {
+      return chrome;
+    }
+    
+    // Fallback - throw error if no compatible API found
+    throw new Error('No compatible browser extension API found');
+  }
+
+  // Storage API abstraction
+  get storage() {
+    return {
+      sync: {
+        get: (keys) => {
+          if (this.isFirefox) {
+            return this.api.storage.sync.get(keys);
+          } else {
+            return new Promise((resolve) => {
+              this.api.storage.sync.get(keys, resolve);
+            });
+          }
+        },
+        set: (data) => {
+          if (this.isFirefox) {
+            return this.api.storage.sync.set(data);
+          } else {
+            return new Promise((resolve) => {
+              this.api.storage.sync.set(data, resolve);
+            });
+          }
+        }
+      }
+    };
+  }
+
+  // Runtime API abstraction
+  get runtime() {
+    return {
+      sendMessage: (...args) => {
+        if (this.isFirefox) {
+          return this.api.runtime.sendMessage(...args);
+        } else {
+          return new Promise((resolve, reject) => {
+            this.api.runtime.sendMessage(...args, (response) => {
+              if (this.api.runtime.lastError) {
+                reject(new Error(this.api.runtime.lastError.message));
+              } else {
+                resolve(response);
+              }
+            });
+          });
+        }
+      },
+      onMessage: {
+        addListener: (callback) => this.api.runtime.onMessage.addListener(callback)
+      }
+    };
+  }
+
+  // Check if running in extension context
+  isExtensionContext() {
+    return !!(this.api && this.api.runtime && this.api.runtime.id);
+  }
+}
+
+// Create browserAPI instance for background script
+let browserAPI;
+try {
+  browserAPI = new BrowserAPI();
+  console.log('[AI Proofreader] Background: Browser API initialized successfully');
+} catch (error) {
+  console.error('[AI Proofreader] Background: Browser API initialization failed:', error.message);
+  browserAPI = null;
+}
+
 class LLMProofreader {
   constructor() {
     this.localEndpoint = 'http://127.0.0.1:11434/api/generate'; // Use 127.0.0.1 instead of localhost for better Chrome extension compatibility
