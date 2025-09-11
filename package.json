@@ -5,9 +5,9 @@
   "main": "manifest.json",
   "scripts": {
     "dev": "echo 'Load extension in Chrome: chrome://extensions/ > Developer mode > Load unpacked'",
-    "build": "scripts/build-multi-browser.sh",
-    "build:chrome": "echo 'Building Chrome/Edge package...' && scripts/build-multi-browser.sh",
-    "build:firefox": "echo 'Building Firefox package...' && scripts/build-multi-browser.sh",
+    "build": "powershell -ExecutionPolicy Bypass -File scripts/build-multi-browser.ps1",
+    "build:chrome": "echo 'Building Chrome/Edge package...' && powershell -ExecutionPolicy Bypass -File scripts/build-multi-browser.ps1",
+    "build:firefox": "echo 'Building Firefox package...' && powershell -ExecutionPolicy Bypass -File scripts/build-multi-browser.ps1",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
