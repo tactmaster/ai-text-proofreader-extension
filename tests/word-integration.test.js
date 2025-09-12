@@ -9,6 +9,16 @@ describe('Word Integration Functionality Tests', () => {
     jest.clearAllMocks();
 
     // Mock DOM elements specific to Word integration
+    const editSurfaceElement = {
+      get textContent() { return this._textContent || 'Document content in edit mode'; },
+      set textContent(value) { this._textContent = value; },
+      get innerHTML() { return this._innerHTML || '<div>Document content in edit mode</div>'; },
+      set innerHTML(value) { this._innerHTML = value; },
+      addEventListener: jest.fn(),
+      focus: jest.fn(),
+      blur: jest.fn()
+    };
+
     mockDocument = {
       querySelector: jest.fn((selector) => {
         const elements = {
@@ -23,14 +33,7 @@ describe('Word Integration Functionality Tests', () => {
               }))
             }
           },
-          '.WACViewPanel_EditSurface': {
-            get textContent() { return this._textContent || 'Document content in edit mode'; },
-            set textContent(value) { this._textContent = value; },
-            get innerHTML() { return this._innerHTML || '<div>Document content in edit mode</div>'; },
-            set innerHTML(value) { this._innerHTML = value; },
-            addEventListener: jest.fn(),
-            focus: jest.fn()
-          },
+          '.WACViewPanel_EditSurface': editSurfaceElement,
           '.WACViewPanel_ReadingSurface': {
             textContent: 'Document content in reading mode',
             addEventListener: jest.fn()
