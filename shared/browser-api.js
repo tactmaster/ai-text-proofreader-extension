@@ -5,8 +5,8 @@ class BrowserAPI {
   constructor() {
     // Detect browser and API availability
     this.api = this.detectBrowserAPI();
-    this.isChromium = this.api === chrome;
-    this.isFirefox = typeof browser !== 'undefined' && browser.runtime;
+    this.isChromium = this.api === (typeof chrome !== 'undefined' ? chrome : null);
+    this.isFirefox = this.api === (typeof browser !== 'undefined' ? browser : null);
   }
 
   detectBrowserAPI() {
@@ -32,8 +32,14 @@ class BrowserAPI {
           if (this.isFirefox) {
             return this.api.storage.sync.get(keys);
           }
-          return new Promise((resolve) => {
-            this.api.storage.sync.get(keys, resolve);
+          return new Promise((resolve, reject) => {
+            this.api.storage.sync.get(keys, (result) => {
+              if (this.api.runtime.lastError) {
+                reject(new Error(this.api.runtime.lastError.message));
+              } else {
+                resolve(result);
+              }
+            });
           });
         },
         
@@ -41,8 +47,70 @@ class BrowserAPI {
           if (this.isFirefox) {
             return this.api.storage.sync.set(items);
           }
+          return new Promise((resolve, reject) => {
+            this.api.storage.sync.set(items, () => {
+              if (this.api.runtime.lastError) {
+                reject(new Error(this.api.runtime.lastError.message));
+              } else {
+                resolve();
+              }
+            });
+          });
+        },
+
+        remove: (keys) => {
+          if (this.isFirefox) {
+            return this.api.storage.sync.remove(keys);
+          }
           return new Promise((resolve) => {
-            this.api.storage.sync.set(items, resolve);
+            this.api.storage.sync.remove(keys, resolve);
+          });
+        },
+
+        clear: () => {
+          if (this.isFirefox) {
+            return this.api.storage.sync.clear();
+          }
+          return new Promise((resolve) => {
+            this.api.storage.sync.clear(resolve);
+          });
+        }
+      },
+
+      local: {
+        get: (keys) => {
+          if (this.isFirefox) {
+            return this.api.storage.local.get(keys);
+          }
+          return new Promise((resolve) => {
+            this.api.storage.local.get(keys, resolve);
+          });
+        },
+        
+        set: (items) => {
+          if (this.isFirefox) {
+            return this.api.storage.local.set(items);
+          }
+          return new Promise((resolve) => {
+            this.api.storage.local.set(items, resolve);
+          });
+        },
+
+        remove: (keys) => {
+          if (this.isFirefox) {
+            return this.api.storage.local.remove(keys);
+          }
+          return new Promise((resolve) => {
+            this.api.storage.local.remove(keys, resolve);
+          });
+        },
+
+        clear: () => {
+          if (this.isFirefox) {
+            return this.api.storage.local.clear();
+          }
+          return new Promise((resolve) => {
+            this.api.storage.local.clear(resolve);
           });
         }
       }
@@ -88,6 +156,10 @@ class BrowserAPI {
               }
             });
           }
+        },
+
+        removeListener: (callback) => {
+          this.api.runtime.onMessage.removeListener(callback);
         }
       },
 

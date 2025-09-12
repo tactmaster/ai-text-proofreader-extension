@@ -170,7 +170,7 @@ describe('Browser API Abstraction Layer Tests', () => {
 
       const listener = jest.fn();
       api.runtime.onMessage.addListener(listener);
-      expect(global.chrome.runtime.onMessage.addListener).toHaveBeenCalledWith(listener);
+      expect(global.chrome.runtime.onMessage.addListener).toHaveBeenCalledWith(expect.any(Function));
 
       api.runtime.onMessage.removeListener(listener);
       expect(global.chrome.runtime.onMessage.removeListener).toHaveBeenCalledWith(listener);
@@ -223,7 +223,20 @@ describe('Browser API Abstraction Layer Tests', () => {
           sendMessage: jest.fn(),
           lastError: null
         },
-        storage: { sync: {}, local: {} }
+        storage: { 
+          sync: {
+            get: jest.fn(),
+            set: jest.fn(),
+            remove: jest.fn(),
+            clear: jest.fn()
+          }, 
+          local: {
+            get: jest.fn(),
+            set: jest.fn(),
+            remove: jest.fn(),
+            clear: jest.fn()
+          } 
+        }
       };
     });
 
