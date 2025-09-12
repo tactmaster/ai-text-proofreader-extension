@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "AI Text Proofreader",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "An extension that uses AI/LLM to proofread and correct text in input fields",
   "permissions": [
     "activeTab",
@@ -19,9 +19,17 @@
   },
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
-      "js": ["shared/browser-api.js", "content/context-detector.js", "content/content.js"],
-      "css": ["content/content.css"]
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "shared/browser-api.js",
+        "content/context-detector.js",
+        "content/content.js"
+      ],
+      "css": [
+        "content/content.css"
+      ]
     }
   ],
   "action": {
@@ -35,8 +43,13 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["shared/*", "src/*"],
-      "matches": ["<all_urls>"]
+      "resources": [
+        "shared/*",
+        "src/*"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
     }
   ]
 }
