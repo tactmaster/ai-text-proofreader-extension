@@ -1,21 +1,20 @@
 {
-  "manifest_version": 3,
+  "manifest_version": 2,
   "name": "AI Text Proofreader",
   "version": "0.2.0",
   "description": "An extension that uses AI/LLM to proofread and correct text in input fields",
   "permissions": [
     "activeTab",
     "storage",
-    "scripting"
-  ],
-  "host_permissions": [
+    "tabs",
     "http://localhost/*",
     "https://localhost/*",
     "http://127.0.0.1/*",
     "https://127.0.0.1/*"
   ],
   "background": {
-    "service_worker": "background/background.js"
+    "scripts": ["shared/browser-api.js", "background/background.js"],
+    "persistent": false
   },
   "content_scripts": [
     {
@@ -24,7 +23,7 @@
       "css": ["content/content.css"]
     }
   ],
-  "action": {
+  "browser_action": {
     "default_popup": "popup/popup.html",
     "default_title": "AI Text Proofreader"
   },
@@ -33,10 +32,11 @@
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
   },
-  "web_accessible_resources": [
-    {
-      "resources": ["shared/*", "src/*"],
-      "matches": ["<all_urls>"]
+  "web_accessible_resources": ["shared/*", "src/*"],
+  "applications": {
+    "gecko": {
+      "id": "ai-text-proofreader@tactmaster.github.io",
+      "strict_min_version": "57.0"
     }
-  ]
+  }
 }

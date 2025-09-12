@@ -1,4 +1,106 @@
 // Background service worker for AI Text Proofreader
+
+// Import browser API abstraction (loaded via manifest)
+// This provides cross-browser compatibility for Chrome, Edge, and Firefox
+
+// Cross-browser API abstraction for background script
+class BrowserAPI {
+  constructor() {
+    // Detect browser and API availability
+    this.api = this.detectBrowserAPI();
+    this.isChromium = this.api === chrome;
+    this.isFirefox = typeof browser !== 'undefined' && browser.runtime;
+  }
+
+  detectBrowserAPI() {
+    // Firefox uses browser.* API
+    if (typeof browser !== 'undefined' && browser.runtime) {
+      return browser;
+    }
+    
+    // Chrome/Edge uses chrome.* API
+    if (typeof chrome !== 'undefined' && chrome.runtime) {
+      return chrome;
+    }
+    
+    // Fallback - throw error if no compatible API found
+    throw new Error('No compatible browser extension API found');
+  }
+
+  // Storage API abstraction
+  get storage() {
+    return {
+      sync: {
+        get: (keys) => {
+          if (this.isFirefox) {
+            return this.api.storage.sync.get(keys);
+          } else {
+            return new Promise((resolve) => {
+              this.api.storage.sync.get(keys, resolve);
+            });
+          }
+        },
+        set: (data) => {
+          if (this.isFirefox) {
+            return this.api.storage.sync.set(data);
+          } else {
+            return new Promise((resolve) => {
+              this.api.storage.sync.set(data, resolve);
+            });
+          }
+        }
+      }
+    };
+  }
+
+  // Runtime API abstraction
+  get runtime() {
+    if (!this.api || !this.api.runtime) {
+      console.error('[BrowserAPI] Runtime API not available');
+      return null;
+    }
+    
+    return {
+      sendMessage: (...args) => {
+        if (this.isFirefox) {
+          return this.api.runtime.sendMessage(...args);
+        } else {
+          return new Promise((resolve, reject) => {
+            this.api.runtime.sendMessage(...args, (response) => {
+              if (this.api.runtime.lastError) {
+                reject(new Error(this.api.runtime.lastError.message));
+              } else {
+                resolve(response);
+              }
+            });
+          });
+        }
+      },
+      onMessage: this.api.runtime.onMessage ? {
+        addListener: (callback) => this.api.runtime.onMessage.addListener(callback)
+      } : null,
+      onInstalled: this.api.runtime.onInstalled ? {
+        addListener: (callback) => this.api.runtime.onInstalled.addListener(callback)
+      } : null
+    };
+  }
+
+  // Check if running in extension context
+  isExtensionContext() {
+    return !!(this.api && this.api.runtime && this.api.runtime.id);
+  }
+}
+
+// Create browserAPI instance for background script
+let browserAPI;
+try {
+  browserAPI = new BrowserAPI();
+  console.log('[AI Proofreader] Background: Browser API initialized successfully');
+} catch (error) {
+  console.error('[AI Proofreader] Background: Browser API initialization failed:', error.message);
+  browserAPI = null;
+}
+
 class LLMProofreader {
   constructor() {
     this.localEndpoint = 'http://127.0.0.1:11434/api/generate'; // Use 127.0.0.1 instead of localhost for better Chrome extension compatibility
@@ -173,8 +275,8 @@ class LLMProofreader {
 
   async loadSettings() {
     try {
-      console.log('[DEBUG] Loading settings from chrome.storage.sync');
-      const result = await chrome.storage.sync.get(['llmSettings']);
+      console.log('[DEBUG] Loading settings from browser storage');
+      const result = await browserAPI.storage.sync.get(['llmSettings']);
       if (result.llmSettings) {
         this.settings = { ...this.settings, ...result.llmSettings };
         console.log('[DEBUG] Settings loaded:', { 
@@ -440,7 +542,7 @@ class LLMProofreader {
 
   async saveSettings(newSettings) {
     this.settings = { ...this.settings, ...newSettings };
-    await chrome.storage.sync.set({ llmSettings: this.settings });
+    await browserAPI.storage.sync.set({ llmSettings: this.settings });
   }
 
   async queryProvider(prompt) {
@@ -946,6 +1048,8 @@ Quick test: Visit http://127.0.0.1:11434 in your browser`);
       return response;
     }
 
+    console.log('[DEBUG] Original response:', JSON.stringify(response.substring(0, 200) + (response.length > 200 ? '...' : '')));
+    
     let cleaned = response.trim();
     
     // Remove common wrapper phrases (case insensitive)
@@ -959,6 +1063,7 @@ Quick test: Visit http://127.0.0.1:11434 in your browser`);
       /^revised\s+text:?\s*/i,
       /^the\s+corrected?\s+text\s+is:?\s*/i,
       /^the\s+improved\s+text\s+is:?\s*/i,
+      /^the\s+fixed\s+text\s+is:?\s*/i,
       /^here\s+you\s+go:?\s*/i,
       /^here\s+it\s+is:?\s*/i,
       /^sure[,!]?\s+here\s+is\s+the\s+corrected?\s+text:?\s*/i,
@@ -971,7 +1076,17 @@ Quick test: Visit http://127.0.0.1:11434 in your browser`);
       /^here'?s\s+an?\s+improved\s+version:?\s*/i,
       /^here'?s\s+the\s+proofread\s+text:?\s*/i,
       /^let\s+me\s+help.*?:?\s*/i,
-      /^i\s+can\s+help.*?:?\s*/i
+      /^i\s+can\s+help.*?:?\s*/i,
+      // Additional patterns for specific reported issues
+      /^sure[,!]?\s+here\s+is\s+the\s+corrected?\s+email:?\s*/i,
+      /^here\s+is\s+the\s+corrected?\s+email:?\s*/i,
+      /^corrected?\s+email:?\s*/i,
+      /^here\s+is\s+your\s+corrected?\s+(?:text|email|message):?\s*/i,
+      /^your\s+corrected?\s+(?:text|email|message):?\s*/i,
+      /^corrected?\s+version:?\s*/i,
+      /^improved?\s+version:?\s*/i,
+      /^output:?\s*/i,
+      /^result:?\s*/i
     ];
 
     // Remove wrapper phrases from the beginning
@@ -1004,6 +1119,16 @@ Quick test: Visit http://127.0.0.1:11434 in your browser`);
     // Remove markdown code blocks if present
     cleaned = cleaned.replace(/^```[\w]*\s*\n?/, '').replace(/\n?```\s*$/, '');
 
+    // Remove trailing wrapper phrases
+    const trailingPhrases = [
+      /\s*(?:hope this helps|let me know|anything else|done|all fixed|perfect|great|looks good|i hope this.*?)(?:[!.?]*)?[\s\n]*$/i,
+      /\s*(?:hope that helps|is that better|how does that look|does this work|is this what you wanted)(?:[!.?]*)?[\s\n]*$/i
+    ];
+
+    for (const phrase of trailingPhrases) {
+      cleaned = cleaned.replace(phrase, '');
+    }
+
     // Preserve formatting by only removing excessive leading/trailing whitespace
     // Remove only excessive leading/trailing blank lines, but preserve intentional newlines
     cleaned = cleaned.replace(/^\n{3,}/, '\n\n').replace(/\n{3,}$/, '\n\n');
@@ -1015,6 +1140,8 @@ Quick test: Visit http://127.0.0.1:11434 in your browser`);
     if (!cleaned.trim()) {
       return '';
     }
+    
+    console.log('[DEBUG] Cleaned response:', JSON.stringify(cleaned.substring(0, 200) + (cleaned.length > 200 ? '...' : '')));
     
     return cleaned;
   }
@@ -1201,81 +1328,89 @@ Suggestions:`;
 const proofreader = new LLMProofreader();
 
 // Handle messages from content script and popup
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  console.log(`[DEBUG] Received message:`, request);
-  
-  switch (request.action) {
-    case 'proofread':
-      proofreader.proofreadText(request.text)
-        .then(correctedText => {
-          sendResponse({ success: true, correctedText });
-        })
-        .catch(error => {
-          sendResponse({ success: false, error: error.message });
-        });
-      return true; // Will respond asynchronously
+if (browserAPI && browserAPI.runtime && browserAPI.runtime.onMessage) {
+  browserAPI.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    console.log(`[DEBUG] Received message:`, request);
+    
+    switch (request.action) {
+      case 'proofread':
+        proofreader.proofreadText(request.text)
+          .then(correctedText => {
+            sendResponse({ success: true, correctedText });
+          })
+          .catch(error => {
+            sendResponse({ success: false, error: error.message });
+          });
+        return true; // Will respond asynchronously
 
-    case 'proofreadWithContext':
-      proofreader.proofreadTextWithContext(request.text, request.context)
-        .then(correctedText => {
-          sendResponse({ success: true, correctedText });
-        })
-        .catch(error => {
-          sendResponse({ success: false, error: error.message });
-        });
-      return true; // Will respond asynchronously
+      case 'proofreadWithContext':
+        proofreader.proofreadTextWithContext(request.text, request.context)
+          .then(correctedText => {
+            sendResponse({ success: true, correctedText });
+          })
+          .catch(error => {
+            sendResponse({ success: false, error: error.message });
+          });
+        return true; // Will respond asynchronously
 
-    case 'getSuggestions':
-      proofreader.getSuggestions(request.text)
-        .then(suggestions => {
-          sendResponse({ success: true, suggestions });
-        })
-        .catch(error => {
-          sendResponse({ success: false, error: error.message });
-        });
-      return true; // Will respond asynchronously
+      case 'getSuggestions':
+        proofreader.getSuggestions(request.text)
+          .then(suggestions => {
+            sendResponse({ success: true, suggestions });
+          })
+          .catch(error => {
+            sendResponse({ success: false, error: error.message });
+          });
+        return true; // Will respond asynchronously
 
-    case 'getSuggestionsWithContext':
-      proofreader.getSuggestionsWithContext(request.text, request.context)
-        .then(suggestions => {
-          sendResponse({ success: true, suggestions });
-        })
-        .catch(error => {
-          sendResponse({ success: false, error: error.message });
-        });
-      return true; // Will respond asynchronously
+      case 'getSuggestionsWithContext':
+        proofreader.getSuggestionsWithContext(request.text, request.context)
+          .then(suggestions => {
+            sendResponse({ success: true, suggestions });
+          })
+          .catch(error => {
+            sendResponse({ success: false, error: error.message });
+          });
+        return true; // Will respond asynchronously
 
-    case 'getSettings':
-      sendResponse({ settings: proofreader.settings });
-      break;
+      case 'getSettings':
+        sendResponse({ settings: proofreader.settings });
+        break;
 
-    case 'saveSettings':
-      proofreader.saveSettings(request.settings)
-        .then(() => {
-          sendResponse({ success: true });
-        })
-        .catch(error => {
-          sendResponse({ success: false, error: error.message });
-        });
-      return true; // Will respond asynchronously
+      case 'saveSettings':
+        proofreader.saveSettings(request.settings)
+          .then(() => {
+            sendResponse({ success: true });
+          })
+          .catch(error => {
+            sendResponse({ success: false, error: error.message });
+          });
+        return true; // Will respond asynchronously
 
-    case 'testConnection':
-      proofreader.testConnection()
-        .then(result => {
-          sendResponse(result);
-        })
-        .catch(error => {
-          sendResponse({ success: false, error: error.message });
-        });
-      return true; // Will respond asynchronously
+      case 'testConnection':
+        proofreader.testConnection()
+          .then(result => {
+            sendResponse(result);
+          })
+          .catch(error => {
+            sendResponse({ success: false, error: error.message });
+          });
+        return true; // Will respond asynchronously
 
-    default:
-      console.warn(`[WARNING] Unknown action: ${request.action}`);
-      sendResponse({ success: false, error: 'Unknown action' });
-  }
-});
+      default:
+        console.warn(`[WARNING] Unknown action: ${request.action}`);
+        sendResponse({ success: false, error: 'Unknown action' });
+    }
+  });
+} else {
+  console.error('[AI Proofreader] Cannot set up message listener: browserAPI.runtime.onMessage not available');
+}
 
 // Handle extension installation
-chrome.runtime.onInstalled.addListener(() => {
-  console.log('AI Text Proofreader extension installed');
-});
+if (browserAPI && browserAPI.runtime && browserAPI.runtime.onInstalled) {
+  browserAPI.runtime.onInstalled.addListener(() => {
+    console.log('AI Text Proofreader extension installed');
+  });
+} else {
+  console.error('[AI Proofreader] Cannot set up onInstalled listener: browserAPI.runtime.onInstalled not available');
+}

@@ -1,20 +1,29 @@
 {
   "name": "ai-text-proofreader",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Chrome extension that uses AI/LLM to proofread and correct text in web page input fields",
   "main": "manifest.json",
   "scripts": {
     "dev": "echo 'Load extension in Chrome: chrome://extensions/ > Developer mode > Load unpacked'",
-    "build": "echo 'No build process required for this extension'",
+    "build": "powershell -ExecutionPolicy Bypass -File scripts/build-multi-browser.ps1",
+    "build:chrome": "echo 'Building Chrome/Edge package...' && powershell -ExecutionPolicy Bypass -File scripts/build-multi-browser.ps1",
+    "build:firefox": "echo 'Building Firefox package...' && powershell -ExecutionPolicy Bypass -File scripts/build-multi-browser.ps1",
     "test": "jest",
+    "test:ci": "jest --testPathIgnorePatterns=browser-api.test.js --testPathIgnorePatterns=word-integration.test.js",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:formatting": "jest tests/formatting-preservation.test.js --verbose",
     "test:context": "jest tests/context-recognition.test.js --verbose",
-    "test:anti-pattern": "jest tests/anti-pattern.test.js --verbose"
+    "test:anti-pattern": "jest tests/anti-pattern.test.js --verbose",
+    "test:errors": "jest tests/chrome-runtime-error.test.js tests/extension-integration-error.test.js --verbose",
+    "test:runtime": "jest tests/chrome-runtime-error.test.js --verbose",
+    "test:integration": "jest tests/extension-integration-error.test.js --verbose"
   },
   "keywords": [
     "chrome-extension",
+    "firefox-addon",
+    "edge-extension",
+    "multi-browser",
     "ai",
     "llm",
     "proofreading",

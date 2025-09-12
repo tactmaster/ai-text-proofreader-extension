@@ -5,36 +5,100 @@ function createCleanResponseTest() {
   // This is the cleanResponse function from background.js adapted for testing
   function cleanResponse(response) {
     if (!response || typeof response !== 'string') {
-      return '';
+      return response;
     }
 
     let cleaned = response.trim();
-
-    // Remove common AI wrapper phrases but preserve formatting
-    const wrapperPatterns = [
-      // Remove leading wrapper phrases
-      /^(Here's|Here is|Here are|This is|The corrected|Corrected|Fixed|Output|Result|Here you go).*?[:]\s*/i,
-      // Remove "The fixed text is:" pattern specifically
-      /^The fixed text is:\s*/i,
-      // Remove trailing wrapper phrases  
-      /\s*(Hope this helps|Let me know|Anything else|Done|All fixed|Perfect|Great|Looks good).*$/i,
-      // Remove standalone encouragement
-      /^\s*(Great|Perfect|Excellent|Nice|Good)\s*[!.]*\s*$/im,
-      // Remove "I hope" phrases
-      /\s*I hope this.*$/i,
-      // Remove single letter artifacts
-      /^\s*[A-Za-z]\s*$/m
+    
+    // Remove common wrapper phrases (case insensitive)
+    const wrapperPhrases = [
+      /^here\s+is\s+the\s+corrected?\s+text:?\s*/i,
+      /^here\s+is\s+the\s+improved\s+text:?\s*/i,
+      /^here\s+is\s+an?\s+improved\s+version:?\s*/i,
+      /^corrected\s+text:?\s*/i,
+      /^improved\s+text:?\s*/i,
+      /^fixed\s+text:?\s*/i,
+      /^revised\s+text:?\s*/i,
+      /^the\s+corrected?\s+text\s+is:?\s*/i,
+      /^the\s+improved\s+text\s+is:?\s*/i,
+      /^the\s+fixed\s+text\s+is:?\s*/i,
+      /^here\s+you\s+go:?\s*/i,
+      /^here\s+it\s+is:?\s*/i,
+      /^sure[,!]?\s+here\s+is\s+the\s+corrected?\s+text:?\s*/i,
+      /^certainly[,!]?\s+here\s+is\s+the\s+corrected?\s+text:?\s*/i,
+      /^sure[,!]?\s+i'?d\s+be\s+happy\s+to\s+help.*?here'?s.*?:?\s*/i,
+      /^i'?d\s+be\s+happy\s+to\s+help.*?here'?s.*?:?\s*/i,
+      /^of\s+course[,!]?\s+here'?s.*?:?\s*/i,
+      /^absolutely[,!]?\s+here'?s.*?:?\s*/i,
+      /^here'?s\s+the\s+corrected?\s+version:?\s*/i,
+      /^here'?s\s+an?\s+improved\s+version:?\s*/i,
+      /^here'?s\s+the\s+proofread\s+text:?\s*/i,
+      /^let\s+me\s+help.*?:?\s*/i,
+      /^i\s+can\s+help.*?:?\s*/i,
+      // Additional patterns for specific reported issues
+      /^sure[,!]?\s+here\s+is\s+the\s+corrected?\s+email:?\s*/i,
+      /^here\s+is\s+the\s+corrected?\s+email:?\s*/i,
+      /^corrected?\s+email:?\s*/i,
+      /^here\s+is\s+your\s+corrected?\s+(?:text|email|message):?\s*/i,
+      /^your\s+corrected?\s+(?:text|email|message):?\s*/i,
+      /^corrected?\s+version:?\s*/i,
+      /^improved?\s+version:?\s*/i,
+      /^output:?\s*/i,
+      /^result:?\s*/i
     ];
 
-    wrapperPatterns.forEach(pattern => {
-      cleaned = cleaned.replace(pattern, '');
-    });
+    // Remove wrapper phrases from the beginning
+    for (const phrase of wrapperPhrases) {
+      cleaned = cleaned.replace(phrase, '');
+    }
 
-    // Clean up extra whitespace but preserve intentional formatting
-    cleaned = cleaned.trim();
+    // Additional aggressive cleaning for conversational responses
+    // Look for patterns like "Sure, I'd be happy to help... Here's..."
+    const conversationalPatterns = [
+      /^[^.!?]*?(here'?s\s+(?:the\s+)?(?:corrected?|improved?|proofread|revised)\s+(?:version|text)(?:\s+of\s+(?:the\s+)?text)?):?\s*/i,
+      /^[^.!?]*?(here'?s\s+an?\s+(?:corrected?|improved?|better)\s+version):?\s*/i,
+      /^[^.!?]*?(?:here'?s\s+what\s+i\s+suggest|here\s+are\s+the\s+corrections?):?\s*/i
+    ];
+
+    for (const pattern of conversationalPatterns) {
+      const match = cleaned.match(pattern);
+      if (match) {
+        cleaned = cleaned.substring(match[0].length);
+        break;
+      }
+    }
+
+    // Remove quotes if the entire response is wrapped in quotes
+    if ((cleaned.startsWith('"') && cleaned.endsWith('"')) ||
+        (cleaned.startsWith("'") && cleaned.endsWith("'"))) {
+      cleaned = cleaned.slice(1, -1);
+    }
+
+    // Remove markdown code blocks if present
+    cleaned = cleaned.replace(/^```[\w]*\s*\n?/, '').replace(/\n?```\s*$/, '');
+
+    // Remove trailing wrapper phrases
+    const trailingPhrases = [
+      /\s*(?:hope this helps|let me know|anything else|done|all fixed|perfect|great|looks good|i hope this.*?)(?:[!.?]*)?[\s\n]*$/i,
+      /\s*(?:hope that helps|is that better|how does that look|does this work|is this what you wanted)(?:[!.?]*)?[\s\n]*$/i
+    ];
+
+    for (const phrase of trailingPhrases) {
+      cleaned = cleaned.replace(phrase, '');
+    }
+
+    // Preserve formatting by only removing excessive leading/trailing whitespace
+    // Remove only excessive leading/trailing blank lines, but preserve intentional newlines
+    cleaned = cleaned.replace(/^\n{3,}/, '\n\n').replace(/\n{3,}$/, '\n\n');
     
-    // Don't collapse multiple newlines - they might be intentional formatting
-    // Just remove excessive leading/trailing whitespace
+    // Trim only space/tab characters from start and end, but preserve newlines
+    cleaned = cleaned.replace(/^[ \t]+/, '').replace(/[ \t]+$/, '');
+    
+    // If result is just whitespace, return empty string
+    if (!cleaned.trim()) {
+      return '';
+    }
+    
     return cleaned;
   }
 

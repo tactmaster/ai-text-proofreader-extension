@@ -2,10 +2,12 @@
 
 ## Overview
 
-This test suite provides comprehensive coverage for formatting preservation and context recognition in the AI Text Proofreader Chrome Extension. The tests specifically validate the requirements you mentioned:
+This test suite provides comprehensive coverage for the AI Text Proofreader Chrome Extension, including formatting preservation, context recognition, and robust error handling. The tests validate critical requirements:
 
 1. **Not removing formatting** (preserving newlines, bullets, numbers)
 2. **Recognizing formatting** (detecting different formatting types)
+3. **Chrome runtime error handling** (graceful degradation when APIs unavailable)
+4. **Extension integration reliability** (proper initialization and cleanup)
 
 ## Test Structure
 
@@ -63,6 +65,45 @@ This test suite provides comprehensive coverage for formatting preservation and 
 - ✅ **Custom configurations** - Uses user-defined website categories
 - ✅ **Prompt validation** - All prompts include PRESERVE instructions
 
+### 5. Chrome Runtime Error Tests (`chrome-runtime-error.test.js`) 🆕
+**Purpose**: Test Chrome extension API error handling and graceful degradation
+
+#### Chrome API availability tests:
+- ✅ **Missing chrome object** - Handles undefined chrome gracefully
+- ✅ **Missing chrome.runtime** - Handles missing runtime API
+- ✅ **Disconnected extension** - Handles missing runtime.id
+- ✅ **Proper validation** - Validates Chrome extension context
+
+#### SendMessage error handling tests:
+- ✅ **SendMessage failures** - Handles API call failures gracefully
+- ✅ **Response errors** - Handles error responses from background script
+- ✅ **Context invalidation** - Handles extension context becoming invalid
+
+#### Initialization tests:
+- ✅ **Multiple initialization prevention** - Prevents duplicate setup
+- ✅ **DOM readiness handling** - Proper initialization timing
+- ✅ **Error message formatting** - User-friendly error messages
+
+#### Content script robustness tests:
+- ✅ **Missing DOM elements** - Handles missing text inputs
+- ✅ **Text validation** - Validates content before processing
+
+### 6. Extension Integration Error Tests (`extension-integration-error.test.js`) 🆕
+**Purpose**: Test real-world error scenarios and edge cases
+
+#### Real-world error scenarios:
+- ✅ **Original sendMessage error reproduction** - Tests the exact "Cannot read properties of undefined" fix
+- ✅ **Extension context invalidation** - Handles runtime disconnection during operation
+- ✅ **Extension reload scenarios** - Proper handling during extension updates
+
+#### User experience error handling:
+- ✅ **Actionable error messages** - Clear guidance for users
+- ✅ **Graceful degradation** - Page functionality preserved when extension fails
+
+#### Edge case handling:
+- ✅ **Rapid successive API calls** - Handles multiple simultaneous requests
+- ✅ **Memory cleanup** - Proper cleanup on extension reload
+
 ## Running Tests
 
 ### Run all tests:
@@ -75,6 +116,7 @@ npm test
 npm run test:formatting    # Formatting preservation tests
 npm run test:context       # Context recognition tests  
 npm run test:anti-pattern  # Anti-pattern tests
+npm run test:errors        # Chrome runtime error tests
 ```
 
 ### Run with coverage:

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extension Debug Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .debug-info {
+            background: #e8f4fd;
+            border: 1px solid #bee5eb;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+            font-family: monospace;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        textarea:focus {
+            border-color: #4CAF50;
+            outline: none;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 AI Text Proofreader - Debug Test</h1>
+        
+        <div id="debugInfo" class="debug-info">
+            <h3>Debug Information:</h3>
+            <div id="debugContent">Loading...</div>
+        </div>
+
+        <h3>Test Text Input:</h3>
+        <textarea id="testText" placeholder="Click here to test the extension. Two buttons should appear if the extension is working correctly.">This sentance has some intentional speling mistakes for testing purpuses.</textarea>
+        
+        <div style="margin-top: 20px;">
+            <button onclick="runDiagnostics()">🔍 Run Diagnostics</button>
+            <button onclick="clearConsole()">🧹 Clear Console</button>
+            <button onclick="reloadExtension()">🔄 Reload Extension</button>
+        </div>
+
+        <div id="consoleOutput" class="debug-info" style="margin-top: 20px;">
+            <h3>Console Output:</h3>
+            <div id="consoleContent">No messages yet...</div>
+        </div>
+    </div>
+
+    <script>
+        let consoleMessages = [];
+
+        // Capture console messages
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+
+        function addConsoleMessage(type, ...args) {
+            const timestamp = new Date().toLocaleTimeString();
+            const message = args.map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+            ).join(' ');
+            
+            consoleMessages.push({
+                type,
+                timestamp,
+                message
+            });
+            
+            updateConsoleDisplay();
+        }
+
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addConsoleMessage('log', ...args);
+        };
+
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addConsoleMessage('error', ...args);
+        };
+
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            addConsoleMessage('warn', ...args);
+        };
+
+        function updateConsoleDisplay() {
+            const content = document.getElementById('consoleContent');
+            if (consoleMessages.length === 0) {
+                content.innerHTML = 'No messages yet...';
+                return;
+            }
+
+            content.innerHTML = consoleMessages.slice(-10).map(msg => {
+                const color = {
+                    'error': '#dc3545',
+                    'warn': '#ffc107',
+                    'log': '#28a745'
+                }[msg.type] || '#000';
+
+                return `<div style="color: ${color}; margin: 5px 0;">
+                    <strong>[${msg.timestamp}]</strong> ${msg.message}
+                </div>`;
+            }).join('');
+        }
+
+        function runDiagnostics() {
+            const debugContent = document.getElementById('debugContent');
+            
+            let diagnostics = [];
+            
+            // Check Chrome extension APIs
+            diagnostics.push(`Chrome object: ${typeof chrome !== 'undefined' ? '✅ Available' : '❌ Not available'}`);
+            
+            if (typeof chrome !== 'undefined') {
+                diagnostics.push(`Chrome.runtime: ${chrome.runtime ? '✅ Available' : '❌ Not available'}`);
+                
+                if (chrome.runtime) {
+                    diagnostics.push(`Runtime ID: ${chrome.runtime.id || '❌ No ID'}`);
+                }
+            }
+
+            // Check for extension elements
+            const aiButton = document.getElementById('ai-proofread-button');
+            const menuButton = document.getElementById('ai-menu-button');
+            
+            diagnostics.push(`AI Button: ${aiButton ? '✅ Found' : '❌ Not found'}`);
+            diagnostics.push(`Menu Button: ${menuButton ? '✅ Found' : '❌ Not found'}`);
+
+            // Check for content scripts
+            diagnostics.push(`Document ready state: ${document.readyState}`);
+            diagnostics.push(`User agent: ${navigator.userAgent.includes('Chrome') ? '✅ Chrome' : '❌ Not Chrome'}`);
+
+            const status = diagnostics.some(d => d.includes('❌')) ? 'error' : 'success';
+            debugContent.innerHTML = `<div class="${status}">
+                ${diagnostics.map(d => `<div>• ${d}</div>`).join('')}
+            </div>`;
+
+            console.log('🔍 Diagnostics completed:', diagnostics);
+        }
+
+        function clearConsole() {
+            consoleMessages = [];
+            updateConsoleDisplay();
+            console.log('🧹 Console cleared');
+        }
+
+        function reloadExtension() {
+            console.log('🔄 Please manually reload the extension:');
+            console.log('1. Go to chrome://extensions/');
+            console.log('2. Find "AI Text Proofreader"');
+            console.log('3. Click the reload button');
+            console.log('4. Refresh this page');
+            
+            alert('Please reload the extension manually:\n\n1. Go to chrome://extensions/\n2. Find "AI Text Proofreader"\n3. Click the reload button\n4. Refresh this page');
+        }
+
+        // Run initial diagnostics
+        window.addEventListener('load', () => {
+            setTimeout(runDiagnostics, 1000);
+        });
+
+        // Focus on textarea to trigger extension
+        document.getElementById('testText').addEventListener('focus', () => {
+            console.log('📝 Text area focused - extension should show buttons now');
+            setTimeout(() => {
+                const aiButton = document.getElementById('ai-proofread-button');
+                const menuButton = document.getElementById('ai-menu-button');
+                
+                if (aiButton && menuButton) {
+                    console.log('✅ Both buttons found after focus!');
+                } else {
+                    console.log('❌ Buttons not found after focus');
+                }
+                runDiagnostics();
+            }, 500);
+        });
+    </script>
+</body>
+</html>

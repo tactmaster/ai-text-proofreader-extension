@@ -515,3 +515,46 @@ footer {
     min-width: auto;
     min-height: auto;
 }
+
+/* Word Integration Feature List */
+.feature-list {
+    margin: 12px 0;
+    background: #f8f9fa;
+    border-radius: 6px;
+    padding: 12px;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 13px;
+}
+
+.feature-item:last-child {
+    margin-bottom: 0;
+}
+
+.feature-icon {
+    margin-right: 8px;
+    font-size: 14px;
+    width: 20px;
+    text-align: center;
+}
+
+#enable-word-mode {
+    margin-top: 8px;
+    width: 100%;
+    background: linear-gradient(135deg, #2196F3, #1976D2);
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+#enable-word-mode:hover {
+    background: linear-gradient(135deg, #1976D2, #1565C0);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3);
+}
