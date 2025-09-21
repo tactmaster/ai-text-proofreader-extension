@@ -6,6 +6,8 @@
 
 A powerful **multi-browser extension** that works on **Chrome**, **Edge**, and **Firefox**, using AI/LLM technology to proofread and correct text in any text input field on web pages. Supports both local LLMs (via Ollama) and cloud-based services like OpenAI.
 
+> **📖 Why This Project Exists**: This extension was created to address the gaps in existing proofreading tools, especially for users with dyslexia. Most tools assume users can spot their own mistakes and focus only on minor errors. This project leverages AI's contextual understanding to provide comprehensive text improvements while respecting privacy through local processing options. [Read the full story →](PROJECT_PURPOSE.md)
+
 ## 🌐 Browser Support
 
 | Browser | Support | Manifest | Status |
@@ -125,6 +127,15 @@ For privacy and offline usage, set up Ollama:
 - **Provider**: Custom Endpoint
 - **Endpoint URL**: Your custom LLM API endpoint
 - **Model**: Depends on your service
+
+## 🧠 Designed for Dyslexic Users
+
+Unlike traditional tools that assume you can spot mistakes, this extension:
+
+- **Analyzes entire sentences** - not just individual errors
+- **Preserves your voice** - improves clarity without changing your style  
+- **Provides complete fixes** - comprehensive improvements, not piecemeal corrections
+- **Respects privacy** - local processing option keeps text on your computer
 
 ## Supported LLM Models
 
