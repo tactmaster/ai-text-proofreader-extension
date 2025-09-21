@@ -1,6 +1,9 @@
-name: Multi-Browser Extension Build and Package
+name: Release
 
 on:
+  push:
+    tags:
+      - 'v*.*.*'  # Triggers on version tags like v0.2.0, v1.0.0
   release:
     types: [created]
   workflow_dispatch:
@@ -8,6 +11,9 @@ on:
       create_release:
         description: 'Create a new release'
         required: false
+      version:
+        description: 'Version number (e.g., v0.2.0)'
+        required: true
         default: 'false'
 
 jobs:

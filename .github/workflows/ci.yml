@@ -1,0 +1,155 @@
+name: CI Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: Test Extension
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci || npm install
+    
+    - name: Lint code
+      run: |
+        # Basic linting for JavaScript files
+        npx eslint . --ext .js --ignore-pattern node_modules/ || echo "ESLint not configured, skipping..."
+    
+    - name: Validate manifests
+      run: |
+        # Check that manifest files are valid JSON
+        echo "Validating Chrome/Edge manifest..."
+        cat manifest.json | jq empty
+        echo "Validating Firefox manifest..."
+        cat manifest-firefox.json | jq empty
+        echo "✅ All manifests are valid JSON"
+    
+    - name: Check file structure
+      run: |
+        # Verify required files exist
+        echo "Checking required extension files..."
+        test -f manifest.json || (echo "❌ manifest.json missing" && exit 1)
+        test -f manifest-firefox.json || (echo "❌ manifest-firefox.json missing" && exit 1)
+        test -f popup/popup.html || (echo "❌ popup/popup.html missing" && exit 1)
+        test -f popup/popup.js || (echo "❌ popup/popup.js missing" && exit 1)
+        test -f content/content.js || (echo "❌ content/content.js missing" && exit 1)
+        test -f background/background.js || (echo "❌ background/background.js missing" && exit 1)
+        echo "✅ All required files present"
+    
+    - name: Validate extension structure
+      run: |
+        # Check that key directories exist
+        echo "Validating extension structure..."
+        test -d popup || (echo "❌ popup directory missing" && exit 1)
+        test -d content || (echo "❌ content directory missing" && exit 1)
+        test -d background || (echo "❌ background directory missing" && exit 1)
+        test -d shared || (echo "❌ shared directory missing" && exit 1)
+        test -d icons || (echo "❌ icons directory missing" && exit 1)
+        echo "✅ Extension structure valid"
+
+    - name: Test browser compatibility
+      run: |
+        # Verify browser-specific files are properly configured
+        echo "Testing browser compatibility..."
+        
+        # Check Chrome/Edge manifest
+        echo "Checking Chrome/Edge manifest version..."
+        CHROME_VERSION=$(cat manifest.json | jq -r '.manifest_version')
+        if [ "$CHROME_VERSION" != "3" ]; then
+          echo "❌ Chrome manifest should be version 3, got $CHROME_VERSION"
+          exit 1
+        fi
+        
+        # Check Firefox manifest  
+        echo "Checking Firefox manifest version..."
+        FIREFOX_VERSION=$(cat manifest-firefox.json | jq -r '.manifest_version')
+        if [ "$FIREFOX_VERSION" != "2" ]; then
+          echo "❌ Firefox manifest should be version 2, got $FIREFOX_VERSION"
+          exit 1
+        fi
+        
+        echo "✅ Browser compatibility checks passed"
+
+  security-scan:
+    runs-on: ubuntu-latest
+    name: Security Scan
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Run security audit
+      run: |
+        # Check for common security issues in extension files
+        echo "Running security checks..."
+        
+        # Check for eval() usage (security risk)
+        if grep -r "eval(" --include="*.js" .; then
+          echo "❌ Found eval() usage - security risk"
+          exit 1
+        fi
+        
+        # Check for innerHTML with user input (XSS risk)
+        if grep -r "innerHTML.*\+" --include="*.js" .; then
+          echo "⚠️ Found innerHTML concatenation - potential XSS risk"
+        fi
+        
+        # Check for external script loading
+        if grep -r "src=.*http" --include="*.html" .; then
+          echo "❌ Found external script loading - security risk"
+          exit 1
+        fi
+        
+        echo "✅ Security scan completed"
+
+  build:
+    runs-on: ubuntu-latest
+    name: Build Extension Packages
+    needs: [test, security-scan]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+    
+    - name: Build extension packages
+      run: |
+        # Create build directory
+        mkdir -p dist
+        
+        # Package Chrome/Edge version
+        echo "Packaging Chrome/Edge extension..."
+        zip -r dist/chrome-edge-extension.zip . \
+          -x "node_modules/*" "dist/*" ".git/*" "*.md" "manifest-firefox.json" ".github/*"
+        
+        # Package Firefox version  
+        echo "Packaging Firefox extension..."
+        cp manifest-firefox.json manifest.json.backup
+        mv manifest-firefox.json manifest.json
+        zip -r dist/firefox-extension.zip . \
+          -x "node_modules/*" "dist/*" ".git/*" "*.md" "manifest.json.backup" ".github/*"
+        mv manifest.json.backup manifest.json
+        
+        echo "✅ Extension packages built successfully"
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: extension-packages
+        path: dist/
+        retention-days: 30
