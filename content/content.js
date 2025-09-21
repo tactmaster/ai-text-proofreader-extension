@@ -820,8 +820,9 @@ function initializeExtension() {
   try {
     // Check if browser extension context is available
     if (!browserAPI) {
-      console.error('[AI Proofreader] Browser extension context not available');
-      console.error('[AI Proofreader] Please reload the extension and refresh this page');
+      console.warn('[AI Proofreader] Browser extension context not yet available, retrying...');
+      // Retry after a short delay to allow browserAPI initialization to complete
+      setTimeout(initializeExtension, 100);
       return;
     }
 
@@ -839,8 +840,42 @@ function initializeExtension() {
   }
 }
 
+// Initialize with retry counter to prevent infinite retries
+let initRetryCount = 0;
+const MAX_INIT_RETRIES = 10; // Maximum 1 second of retries
+
+function initializeExtensionWithRetry() {
+  try {
+    // Check if browser extension context is available
+    if (!browserAPI) {
+      if (initRetryCount < MAX_INIT_RETRIES) {
+        initRetryCount++;
+        console.warn(`[AI Proofreader] Browser extension context not yet available, retrying... (${initRetryCount}/${MAX_INIT_RETRIES})`);
+        setTimeout(initializeExtensionWithRetry, 100);
+        return;
+      } else {
+        console.error('[AI Proofreader] Browser extension context not available after retries');
+        console.error('[AI Proofreader] Please reload the extension and refresh this page');
+        return;
+      }
+    }
+
+    // Check if runtime is connected
+    if (!browserAPI.isExtensionContext()) {
+      console.error('[AI Proofreader] Extension runtime disconnected');
+      console.error('[AI Proofreader] Please reload the extension');
+      return;
+    }
+
+    console.log('[AI Proofreader] Initializing extension...');
+    new TextBoxProofreader();
+  } catch (error) {
+    console.error('[AI Proofreader] Failed to initialize:', error);
+  }
+}
+
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initializeExtension);
+  document.addEventListener('DOMContentLoaded', initializeExtensionWithRetry);
 } else {
-  initializeExtension();
+  initializeExtensionWithRetry();
 }

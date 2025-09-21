@@ -558,3 +558,101 @@ footer {
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3);
 }
+
+/* Stop Word Mode button */
+#stop-word-mode {
+    margin-top: 8px;
+    width: 100%;
+    background: linear-gradient(135deg, #f44336, #d32f2f);
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#stop-word-mode:hover {
+    background: linear-gradient(135deg, #d32f2f, #c62828);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(244, 67, 54, 0.3);
+}
+
+.stop-btn {
+    background: linear-gradient(135deg, #f44336, #d32f2f) !important;
+    color: white !important;
+}
+
+.stop-btn:hover {
+    background: linear-gradient(135deg, #d32f2f, #c62828) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(244, 67, 54, 0.3);
+}
+
+/* Model management styles */
+.model-list {
+    margin-top: 12px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    border: 1px solid #e9ecef;
+}
+
+.model-list label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: #495057;
+}
+
+#model-select {
+    width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 8px;
+    font-size: 14px;
+    background: white;
+    margin-bottom: 8px;
+}
+
+#model-select option {
+    padding: 8px;
+    border-bottom: 1px solid #eee;
+}
+
+#model-select option:hover {
+    background: #f0f8ff;
+}
+
+#model-select option:last-child {
+    border-bottom: none;
+}
+
+/* Port input styling */
+#ollama-port-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+#ollama-port-input:focus {
+    outline: none;
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+}
+
+/* Button group for Ollama settings */
+#local-settings .button-group {
+    margin-top: 8px;
+    margin-bottom: 12px;
+}
+
+#refresh-models-btn, #test-ollama-btn {
+    font-size: 12px;
+    padding: 8px 12px;
+    min-height: auto;
+}

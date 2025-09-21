@@ -61,43 +61,9 @@
 
             <div class="button-group">
                 <button id="proofread-btn" class="primary-btn" title="Proofread Text">
-                    <svg width="16" height="16" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-                      <defs>
-                        <linearGradient id="btnMainGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                          <stop offset="0%" style="stop-color:#667eea"/>
-                          <stop offset="50%" style="stop-color:#764ba2"/>
-                          <stop offset="100%" style="stop-color:#f093fb"/>
-                        </linearGradient>
-                        <linearGradient id="btnAccentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                          <stop offset="0%" style="stop-color:#00d4aa"/>
-                          <stop offset="100%" style="stop-color:#00a8ff"/>
-                        </linearGradient>
-                      </defs>
-                      <circle cx="16" cy="16" r="15" fill="url(#btnMainGrad)" stroke="white" stroke-width="1"/>
-                      <g opacity="0.4">
-                        <rect x="8" y="8" width="16" height="1" fill="url(#btnAccentGrad)" rx="0.5"/>
-                        <rect x="8" y="11" width="12" height="1" fill="url(#btnAccentGrad)" rx="0.5"/>
-                        <rect x="8" y="14" width="16" height="1" fill="url(#btnAccentGrad)" rx="0.5"/>
-                        <rect x="8" y="17" width="10" height="1" fill="url(#btnAccentGrad)" rx="0.5"/>
-                        <rect x="8" y="20" width="14" height="1" fill="url(#btnAccentGrad)" rx="0.5"/>
-                        <rect x="8" y="23" width="8" height="1" fill="url(#btnAccentGrad)" rx="0.5"/>
-                        <rect x="12" y="8" width="1" height="15" fill="url(#btnAccentGrad)" rx="0.5"/>
-                        <rect x="20" y="8" width="1" height="12" fill="url(#btnAccentGrad)" rx="0.5"/>
-                        <rect x="16" y="11" width="1" height="9" fill="url(#btnAccentGrad)" rx="0.5"/>
-                      </g>
-                      <text x="16" y="20" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="white" stroke="rgba(0,0,0,0.3)" stroke-width="0.5">AI</text>
-                      <circle cx="10" cy="10" r="1.5" fill="white" opacity="0.8"/>
-                      <circle cx="22" cy="10" r="1.5" fill="white" opacity="0.8"/>
-                      <circle cx="16" cy="6" r="1.5" fill="white" opacity="0.8"/>
-                      <circle cx="10" cy="26" r="1.5" fill="white" opacity="0.8"/>
-                      <circle cx="22" cy="26" r="1.5" fill="white" opacity="0.8"/>
-                      <line x1="10" y1="10" x2="16" y2="6" stroke="white" stroke-width="0.5" opacity="0.6"/>
-                      <line x1="22" y1="10" x2="16" y2="6" stroke="white" stroke-width="0.5" opacity="0.6"/>
-                      <line x1="10" y1="10" x2="10" y2="26" stroke="white" stroke-width="0.5" opacity="0.6"/>
-                      <line x1="22" y1="10" x2="22" y2="26" stroke="white" stroke-width="0.5" opacity="0.6"/>
-                    </svg>
+                    ✨ Proofread
                 </button>
-                <button id="suggestions-btn" class="secondary-btn" title="Get Suggestions">💡</button>
+                <button id="suggestions-btn" class="secondary-btn" title="Get Suggestions">💡 Suggestions</button>
             </div>
 
             <div id="loading" class="loading hidden">
@@ -109,8 +75,8 @@
                 <label>Result:</label>
                 <textarea id="output-text" rows="6" readonly></textarea>
                 <div class="button-group">
-                    <button id="copy-result" class="secondary-btn" title="Copy Result">📋</button>
-                    <button id="accept-changes" class="primary-btn" title="Accept Changes">✅</button>
+                    <button id="copy-result" class="secondary-btn" title="Copy Result">📋 Copy</button>
+                    <button id="accept-changes" class="primary-btn" title="Accept Changes">✅ Accept</button>
                 </div>
             </div>
 
@@ -202,9 +168,9 @@
                 </div>
 
                 <div class="button-group">
-                    <button id="save-prompt" class="primary-btn" title="Save Prompt">💾</button>
-                    <button id="reset-prompt" class="secondary-btn" title="Reset to Default">🔄</button>
-                    <button id="preview-prompt" class="secondary-btn" title="Preview">👁️</button>
+                    <button id="save-prompt" class="primary-btn" title="Save Prompt">💾 Save</button>
+                    <button id="reset-prompt" class="secondary-btn" title="Reset to Default">🔄 Reset</button>
+                    <button id="preview-prompt" class="secondary-btn" title="Preview">👁️ Preview</button>
                 </div>
 
                 <div id="prompt-preview" class="section hidden">
@@ -216,10 +182,10 @@
             </div>
 
             <div class="button-group">
-                <button id="save-context-settings" class="primary-btn" title="Save All Context Settings">💾</button>
-                <button id="reset-context-settings" class="secondary-btn" title="Reset All">🔄</button>
-                <button id="export-settings" class="secondary-btn" title="Export Settings">📤</button>
-                <button id="import-settings" class="secondary-btn" title="Import Settings">📥</button>
+                <button id="save-context-settings" class="primary-btn" title="Save All Context Settings">💾 Save All</button>
+                <button id="reset-context-settings" class="secondary-btn" title="Reset All">🔄 Reset All</button>
+                <button id="export-settings" class="secondary-btn" title="Export Settings">📤 Export</button>
+                <button id="import-settings" class="secondary-btn" title="Import Settings">📥 Import</button>
             </div>
         </div>
 
@@ -278,6 +244,29 @@
                 <small>Custom LLM API endpoint</small>
             </div>
 
+            <div id="local-settings" class="section hidden">
+                <label for="ollama-port-input">Ollama Port:</label>
+                <input type="number" id="ollama-port-input" placeholder="11434" min="1" max="65535">
+                <small>Port where Ollama server is running (default: 11434)</small>
+                
+                <div class="button-group">
+                    <button id="refresh-models-btn" type="button" class="secondary-btn" title="Refresh Available Models">
+                        🔄 Refresh Models
+                    </button>
+                    <button id="test-ollama-btn" type="button" class="secondary-btn" title="Test Connection">
+                        🔌 Test Connection
+                    </button>
+                </div>
+                
+                <div id="available-models" class="model-list hidden">
+                    <label>Available Models:</label>
+                    <select id="model-select" size="4">
+                        <!-- Models will be populated here -->
+                    </select>
+                    <small>Select a model or enter custom model name above</small>
+                </div>
+            </div>
+
             <div class="section">
                 <h3>Local LLM Setup (Ollama)</h3>
                 <p>To use local LLMs:</p>
@@ -288,20 +277,20 @@
                     <li>Start: <code>ollama serve</code></li>
                 </ol>
                 <p><strong>Note:</strong> The CORS environment variable is required for browser extensions.</p>
-                <button id="test-connection" class="secondary-btn" title="Test Connection">🔗</button>
+                <button id="test-connection" class="secondary-btn" title="Test Connection">🔗 Test Connection</button>
             </div>
 
             <div class="button-group">
-                <button id="save-settings" class="primary-btn" title="Save Settings">💾</button>
-                <button id="reset-settings" class="secondary-btn" title="Reset">🔄</button>
+                <button id="save-settings" class="primary-btn" title="Save Settings">💾 Save</button>
+                <button id="reset-settings" class="secondary-btn" title="Reset">🔄 Reset</button>
             </div>
 
             <div class="section">
                 <h3>Debug Tools</h3>
-                <button id="show-debug" class="secondary-btn" title="Show Debug Info">🐛</button>
+                <button id="show-debug" class="secondary-btn" title="Show Debug Info">🐛 Debug</button>
                 <div id="debug-info" class="debug-container hidden">
                     <textarea id="debug-output" rows="6" readonly placeholder="Debug information will appear here..."></textarea>
-                    <button id="copy-debug" class="secondary-btn" title="Copy Debug Info">📋</button>
+                    <button id="copy-debug" class="secondary-btn" title="Copy Debug Info">📋 Copy</button>
                 </div>
             </div>
 
@@ -322,7 +311,10 @@
                         <span>Office 365 web support</span>
                     </div>
                 </div>
-                <button id="enable-word-mode" class="secondary-btn" title="Enable Word Mode">🔗 Enable Word Mode</button>
+                <div class="button-group">
+                    <button id="enable-word-mode" class="secondary-btn" title="Enable Word Mode">🔗 Enable Word Mode</button>
+                    <button id="stop-word-mode" class="stop-btn hidden" title="Stop Word Mode">🛑 Stop Word Mode</button>
+                </div>
                 <small>Optimizes AI suggestions for Microsoft Word documents</small>
             </div>
 

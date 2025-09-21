@@ -103,7 +103,6 @@ try {
 
 class LLMProofreader {
   constructor() {
-    this.localEndpoint = 'http://127.0.0.1:11434/api/generate'; // Use 127.0.0.1 instead of localhost for better Chrome extension compatibility
     this.openAIEndpoint = 'https://api.openai.com/v1/chat/completions';
     
     // Comprehensive provider configurations
@@ -268,7 +267,8 @@ class LLMProofreader {
       provider: 'local', // Provider key from providerConfigs
       model: 'llama2', // default local model
       apiKey: '',
-      customEndpoint: ''
+      customEndpoint: '',
+      ollamaPort: '11434' // configurable Ollama port
     };
     this.loadSettings();
   }
@@ -283,13 +283,78 @@ class LLMProofreader {
           provider: this.settings.provider, 
           model: this.settings.model,
           hasApiKey: !!this.settings.apiKey,
-          hasCustomEndpoint: !!this.settings.customEndpoint
+          hasCustomEndpoint: !!this.settings.customEndpoint,
+          ollamaPort: this.settings.ollamaPort
         });
       } else {
         console.log('[DEBUG] No saved settings found, using defaults');
       }
     } catch (error) {
       console.error('Failed to load settings:', error);
+    }
+  }
+
+  // Validate port number (must be integer between 1 and 65535)
+  validatePort(port) {
+    const portNum = Number(port);
+    if (
+      Number.isInteger(portNum) &&
+      portNum >= 1 &&
+      portNum <= 65535
+    ) {
+      return String(portNum);
+    } else {
+      console.warn(`[AI Proofreader] Invalid Ollama port: "${port}". Falling back to default port 11434.`);
+      return '11434';
+    }
+  }
+
+  // Get dynamic Ollama endpoint based on configured port
+  getOllamaEndpoint(endpoint = '/api/generate') {
+    const port = this.validatePort(this.settings.ollamaPort);
+    return `http://127.0.0.1:${port}${endpoint}`;
+  }
+
+  // Fetch available models from Ollama server
+  async getAvailableModels() {
+    try {
+      console.log('[DEBUG] Fetching available models from Ollama...');
+      const response = await fetch(this.getOllamaEndpoint('/api/tags'), {
+        method: 'GET',
+        mode: 'cors',
+        credentials: 'omit',
+        headers: {
+          'Accept': 'application/json',
+        },
+        signal: AbortSignal.timeout(10000) // 10 second timeout
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch models: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      const models = data.models?.map(model => ({
+        name: model.name,
+        size: model.size,
+        modified_at: model.modified_at,
+        details: model.details
+      })) || [];
+
+      console.log('[DEBUG] Available models:', models.map(m => m.name));
+      return {
+        success: true,
+        models: models,
+        port: this.settings.ollamaPort
+      };
+    } catch (error) {
+      console.error('[ERROR] Failed to fetch models:', error);
+      return {
+        success: false,
+        error: error.message,
+        suggestion: 'Make sure Ollama is running on the configured port',
+        port: this.settings.ollamaPort
+      };
     }
   }
 
@@ -300,7 +365,7 @@ class LLMProofreader {
       try {
         // Step 1: Check if Ollama is reachable
         console.log('[DEBUG] Step 1: Checking if Ollama server is reachable...');
-        const healthResponse = await fetch('http://127.0.0.1:11434/api/version', {
+        const healthResponse = await fetch(this.getOllamaEndpoint('/api/version'), {
           method: 'GET',
           mode: 'cors',
           credentials: 'omit',
@@ -320,7 +385,7 @@ class LLMProofreader {
         
         // Step 2: Check available models
         console.log('[DEBUG] Step 2: Checking available models...');
-        const modelsResponse = await fetch('http://127.0.0.1:11434/api/tags', {
+        const modelsResponse = await fetch(this.getOllamaEndpoint('/api/tags'), {
           method: 'GET',
           mode: 'cors',
           credentials: 'omit',
@@ -394,7 +459,7 @@ class LLMProofreader {
         // Step 4: Test actual model inference (optional quick test)
         console.log('[DEBUG] Step 3: Testing model inference...');
         try {
-          const testResponse = await fetch('http://127.0.0.1:11434/api/generate', {
+          const testResponse = await fetch(this.getOllamaEndpoint('/api/generate'), {
             method: 'POST',
             mode: 'cors',
             credentials: 'omit',
@@ -792,7 +857,7 @@ OUTPUT (corrected text only):`;
       const debugInfo = {
         provider: this.settings.provider,
         model: this.settings.model,
-        endpoint: this.settings.provider === 'local' ? this.localEndpoint : 
+        endpoint: this.settings.provider === 'local' ? this.getOllamaEndpoint('/api/generate') : 
                  this.settings.provider === 'custom' ? this.settings.customEndpoint : 'OpenAI',
         textLength: text.length,
         timestamp: new Date().toISOString(),
@@ -813,14 +878,15 @@ If using Ollama:
   }
 
   async queryLocalLLM(prompt) {
-    console.log(`[DEBUG] Attempting to connect to Ollama at ${this.localEndpoint}`);
+    const endpoint = this.getOllamaEndpoint('/api/generate');
+    console.log(`[DEBUG] Attempting to connect to Ollama at ${endpoint}`);
     console.log(`[DEBUG] Using model: ${this.settings.model}`);
     console.log(`[DEBUG] Prompt length: ${prompt.length} characters`);
     
     try {
       // Quick health check first
       console.log(`[DEBUG] Performing health check...`);
-      const healthCheck = await fetch('http://127.0.0.1:11434/api/version', {
+      const healthCheck = await fetch(this.getOllamaEndpoint('/api/version'), {
         method: 'GET',
         mode: 'cors',
         credentials: 'omit',
@@ -839,7 +905,7 @@ If using Ollama:
       // Resolve the actual model name
       let actualModelName = this.settings.model;
       try {
-        const modelsResponse = await fetch('http://127.0.0.1:11434/api/tags', {
+        const modelsResponse = await fetch(this.getOllamaEndpoint('/api/tags'), {
           method: 'GET',
           mode: 'cors',
           credentials: 'omit',
@@ -889,11 +955,11 @@ If using Ollama:
       };
       
       console.log(`[DEBUG] Request body:`, requestBody);
-      console.log(`[DEBUG] Fetch URL: ${this.localEndpoint}`);
+      console.log(`[DEBUG] Fetch URL: ${endpoint}`);
       console.log(`[DEBUG] Fetch headers: Content-Type: application/json, Accept: application/json`);
       console.log(`[DEBUG] CORS mode: cors, credentials: omit`);
       
-      const response = await fetch(this.localEndpoint, {
+      const response = await fetch(endpoint, {
         method: 'POST',
         mode: 'cors', // Explicitly set CORS mode
         credentials: 'omit', // Don't send credentials for CORS
@@ -914,14 +980,14 @@ If using Ollama:
           status: response.status,
           statusText: response.statusText,
           errorText: errorText,
-          url: this.localEndpoint,
+          url: endpoint,
           model: this.settings.model
         });
         
         if (response.status === 403) {
           throw new Error(`CORS Error: Ollama needs CORS configuration. 
             
-Current endpoint: ${this.localEndpoint}
+Current endpoint: ${endpoint}
 Model: ${this.settings.model}
 Response: ${errorText}
 
@@ -962,7 +1028,7 @@ Response: ${errorText}`);
         throw new Error(`Local LLM request failed: ${response.status} - ${response.statusText}. 
         
 Debug info:
-- Endpoint: ${this.localEndpoint}
+- Endpoint: ${endpoint}
 - Configured Model: ${this.settings.model}
 - Resolved Model: ${actualModelName}
 - Response: ${errorText}
@@ -1025,11 +1091,11 @@ Fix steps:
 Current error: ${error.message}`);
         }
         
-        throw new Error(`Cannot connect to Ollama server at ${this.localEndpoint}
+        throw new Error(`Cannot connect to Ollama server at ${endpoint}
         
 Possible causes:
 1. Ollama is not running - Start with: ollama serve
-2. Wrong port - Ollama default is 11434
+2. Wrong port - Check your configured port: ${this.settings.ollamaPort}
 3. CORS not enabled - Set: $env:OLLAMA_ORIGINS="chrome-extension://*,*"
 4. Firewall blocking connection
 
@@ -1389,6 +1455,16 @@ if (browserAPI && browserAPI.runtime && browserAPI.runtime.onMessage) {
 
       case 'testConnection':
         proofreader.testConnection()
+          .then(result => {
+            sendResponse(result);
+          })
+          .catch(error => {
+            sendResponse({ success: false, error: error.message });
+          });
+        return true; // Will respond asynchronously
+
+      case 'getAvailableModels':
+        proofreader.getAvailableModels()
           .then(result => {
             sendResponse(result);
           })
