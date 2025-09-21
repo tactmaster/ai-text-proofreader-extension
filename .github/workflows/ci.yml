@@ -137,11 +137,13 @@ jobs:
     - name: Run security audit
       run: |
         # Check for common security issues in extension files
-        echo "Running security checks..."
+        # Note: We exclude test files as they may legitimately use eval() for testing purposes
+        # and are not shipped to users in the final extension package
+        echo "Running security checks on production code only..."
         
-        # Find JavaScript files excluding node_modules
-        JS_FILES=$(find . -name "*.js" -not -path "./node_modules/*" -not -path "./build/*" -not -path "./dist/*" -not -path "./coverage/*" -not -path "./tmp/*" | head -20 | tr '\n' ' ')
-        echo "Scanning JavaScript files: $JS_FILES"
+        # Find JavaScript files excluding node_modules and test directories
+        JS_FILES=$(find . -name "*.js" -not -path "./node_modules/*" -not -path "./build/*" -not -path "./dist/*" -not -path "./coverage/*" -not -path "./tmp/*" -not -path "./test/*" -not -path "./tests/*" | head -20 | tr '\n' ' ')
+        echo "Scanning JavaScript files (excluding tests): $JS_FILES"
         
         # Check for eval() usage (security risk)
         EVAL_FOUND=false
@@ -174,8 +176,8 @@ jobs:
         fi
         
         # Check for external script loading in HTML files
-        HTML_FILES=$(find . -name "*.html" -not -path "./node_modules/*" -not -path "./build/*" -not -path "./dist/*" -not -path "./coverage/*" -not -path "./tmp/*" | head -10 | tr '\n' ' ')
-        echo "Scanning HTML files: $HTML_FILES"
+        HTML_FILES=$(find . -name "*.html" -not -path "./node_modules/*" -not -path "./build/*" -not -path "./dist/*" -not -path "./coverage/*" -not -path "./tmp/*" -not -path "./test/*" -not -path "./tests/*" | head -10 | tr '\n' ' ')
+        echo "Scanning HTML files (excluding tests): $HTML_FILES"
         
         EXTERNAL_SCRIPTS=false
         for file in $HTML_FILES; do
