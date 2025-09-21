@@ -564,7 +564,7 @@ class PopupController {
     const availableModelsDiv = document.getElementById('available-models');
 
     // Clear existing options
-    modelSelect.innerHTML = '';
+    modelSelect.replaceChildren();
 
     if (models && models.length > 0) {
       models.forEach(model => {
