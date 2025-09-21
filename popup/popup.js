@@ -94,6 +94,18 @@ class PopupController {
       this.testConnection();
     });
 
+    document.getElementById('refresh-models-btn').addEventListener('click', () => {
+      this.refreshAvailableModels();
+    });
+
+    document.getElementById('test-ollama-btn').addEventListener('click', () => {
+      this.testOllamaConnection();
+    });
+
+    document.getElementById('model-select').addEventListener('change', () => {
+      this.selectModelFromList();
+    });
+
     document.getElementById('show-debug').addEventListener('click', () => {
       this.toggleDebugInfo();
     });
@@ -104,6 +116,10 @@ class PopupController {
 
     document.getElementById('enable-word-mode').addEventListener('click', () => {
       this.toggleWordMode();
+    });
+
+    document.getElementById('stop-word-mode').addEventListener('click', () => {
+      this.stopWordMode();
     });
 
     // Context tab event listeners
@@ -170,6 +186,7 @@ class PopupController {
       document.getElementById('model-input').value = settings.model;
       document.getElementById('api-key-input').value = settings.apiKey;
       document.getElementById('custom-endpoint-input').value = settings.customEndpoint;
+      document.getElementById('ollama-port-input').value = settings.ollamaPort || '11434';
 
       this.updateProviderSettings();
       
@@ -177,12 +194,16 @@ class PopupController {
       const wordResult = await browserAPI.storage.sync.get(['wordModeEnabled']);
       const wordModeEnabled = wordResult.wordModeEnabled || false;
       const wordButton = document.getElementById('enable-word-mode');
+      const stopButton = document.getElementById('stop-word-mode');
+      
       if (wordModeEnabled) {
         wordButton.textContent = '✅ Word Mode Enabled';
         wordButton.style.background = 'linear-gradient(135deg, #4CAF50, #45a049)';
+        stopButton.classList.remove('hidden');
       } else {
         wordButton.textContent = '🔗 Enable Word Mode';
         wordButton.style.background = 'linear-gradient(135deg, #2196F3, #1976D2)';
+        stopButton.classList.add('hidden');
       }
       
     } catch (error) {
@@ -196,13 +217,19 @@ class PopupController {
     // Hide all provider-specific settings
     document.getElementById('openai-settings').classList.add('hidden');
     document.getElementById('custom-settings').classList.add('hidden');
+    document.getElementById('local-settings').classList.add('hidden');
 
     // Show relevant settings based on provider type
+    const localProviders = ['local', 'ollama'];
     const commercialAPIs = ['openai', 'anthropic', 'google', 'cohere', 'mistral', 'groq', 'together', 'replicate', 'huggingface'];
     const openSourceAPIs = ['perplexity', 'deepseek', 'fireworks', 'anyscale', 'deepinfra'];
     const customAPIs = ['custom', 'openrouter', 'llamacpp', 'textgen', 'koboldcpp', 'tabbyapi'];
     
-    if (commercialAPIs.includes(provider) || openSourceAPIs.includes(provider)) {
+    if (localProviders.includes(provider)) {
+      document.getElementById('local-settings').classList.remove('hidden');
+      // Auto-refresh models when switching to local provider
+      setTimeout(() => this.refreshAvailableModels(), 500);
+    } else if (commercialAPIs.includes(provider) || openSourceAPIs.includes(provider)) {
       document.getElementById('openai-settings').classList.remove('hidden');
       // Update label and placeholder based on provider
       this.updateAPIKeyLabel(provider);
@@ -394,7 +421,8 @@ class PopupController {
       provider: document.getElementById('provider-select').value,
       model: document.getElementById('model-input').value,
       apiKey: document.getElementById('api-key-input').value,
-      customEndpoint: document.getElementById('custom-endpoint-input').value
+      customEndpoint: document.getElementById('custom-endpoint-input').value,
+      ollamaPort: document.getElementById('ollama-port-input').value || '11434'
     };
 
     try {
@@ -418,6 +446,7 @@ class PopupController {
     document.getElementById('model-input').value = 'llama2';
     document.getElementById('api-key-input').value = '';
     document.getElementById('custom-endpoint-input').value = '';
+    document.getElementById('ollama-port-input').value = '11434';
     this.updateProviderSettings();
     this.showStatus('Settings reset to defaults', 'warning');
   }
@@ -499,6 +528,100 @@ class PopupController {
       }
     } catch (error) {
       console.error('[DEBUG] Test connection error:', error);
+      this.showStatus(`Connection test failed: ${error.message}`, 'error');
+    }
+  }
+
+  async refreshAvailableModels() {
+    this.showStatus('Fetching available models...', 'warning');
+
+    try {
+      const response = await browserAPI.runtime.sendMessage({
+        action: 'getAvailableModels'
+      });
+
+      console.log('[DEBUG] Get models response:', response);
+
+      if (response.success) {
+        this.populateModelList(response.models);
+        this.showStatus(`✅ Found ${response.models.length} models on port ${response.port}`, 'success');
+      } else {
+        let errorMessage = `❌ Failed to fetch models: ${response.error}`;
+        if (response.suggestion) {
+          errorMessage += `\n\n💡 ${response.suggestion}`;
+        }
+        errorMessage += `\n\nPort: ${response.port}`;
+        this.showStatus(errorMessage, 'error');
+      }
+    } catch (error) {
+      console.error('[DEBUG] Refresh models error:', error);
+      this.showStatus(`Failed to refresh models: ${error.message}`, 'error');
+    }
+  }
+
+  populateModelList(models) {
+    const modelSelect = document.getElementById('model-select');
+    const availableModelsDiv = document.getElementById('available-models');
+
+    // Clear existing options
+    modelSelect.innerHTML = '';
+
+    if (models && models.length > 0) {
+      models.forEach(model => {
+        const option = document.createElement('option');
+        option.value = model.name;
+        option.textContent = `${model.name} (${this.formatModelSize(model.size)})`;
+        option.title = `Modified: ${new Date(model.modified_at).toLocaleDateString()}`;
+        modelSelect.appendChild(option);
+      });
+      
+      // Show the model list
+      availableModelsDiv.classList.remove('hidden');
+    } else {
+      // Hide the model list if no models
+      availableModelsDiv.classList.add('hidden');
+    }
+  }
+
+  formatModelSize(sizeBytes) {
+    if (!sizeBytes) return 'Unknown size';
+    const gb = sizeBytes / (1024 * 1024 * 1024);
+    if (gb >= 1) {
+      return `${gb.toFixed(1)}GB`;
+    }
+    const mb = sizeBytes / (1024 * 1024);
+    return `${mb.toFixed(0)}MB`;
+  }
+
+  selectModelFromList() {
+    const modelSelect = document.getElementById('model-select');
+    const modelInput = document.getElementById('model-input');
+    
+    if (modelSelect.value) {
+      modelInput.value = modelSelect.value;
+      this.showStatus(`Model selected: ${modelSelect.value}`, 'success');
+    }
+  }
+
+  async testOllamaConnection() {
+    this.showStatus('Testing Ollama connection...', 'warning');
+
+    try {
+      const port = document.getElementById('ollama-port-input').value || '11434';
+      const testUrl = `http://127.0.0.1:${port}/api/version`;
+      
+      // Test if we can reach the endpoint
+      const testResponse = await browserAPI.runtime.sendMessage({
+        action: 'testConnection'
+      });
+
+      if (testResponse.success) {
+        this.showStatus(`✅ Ollama connected on port ${port}!\n${testResponse.info}`, 'success');
+      } else {
+        this.showStatus(`❌ Connection failed:\n${testResponse.error}\n\nTrying port: ${port}`, 'error');
+      }
+    } catch (error) {
+      console.error('[DEBUG] Ollama test error:', error);
       this.showStatus(`Connection test failed: ${error.message}`, 'error');
     }
   }
@@ -670,13 +793,17 @@ class PopupController {
       await browserAPI.storage.sync.set({ wordModeEnabled: newMode });
       
       const button = document.getElementById('enable-word-mode');
+      const stopButton = document.getElementById('stop-word-mode');
+      
       if (newMode) {
         button.textContent = '✅ Word Mode Enabled';
         button.style.background = 'linear-gradient(135deg, #4CAF50, #45a049)';
+        stopButton.classList.remove('hidden');
         this.showStatus('Word mode enabled! Enhanced features for Microsoft Word.', 'success');
       } else {
         button.textContent = '🔗 Enable Word Mode';
         button.style.background = 'linear-gradient(135deg, #2196F3, #1976D2)';
+        stopButton.classList.add('hidden');
         this.showStatus('Word mode disabled.', 'info');
       }
       
@@ -695,6 +822,38 @@ class PopupController {
     } catch (error) {
       console.error('Failed to toggle Word mode:', error);
       this.showStatus('Failed to toggle Word mode', 'error');
+    }
+  }
+
+  async stopWordMode() {
+    try {
+      // Force disable Word mode
+      await browserAPI.storage.sync.set({ wordModeEnabled: false });
+      
+      const button = document.getElementById('enable-word-mode');
+      const stopButton = document.getElementById('stop-word-mode');
+      
+      button.textContent = '🔗 Enable Word Mode';
+      button.style.background = 'linear-gradient(135deg, #2196F3, #1976D2)';
+      stopButton.classList.add('hidden');
+      
+      this.showStatus('Word mode stopped and disabled.', 'warning');
+      
+      // Notify content script about mode change
+      browserAPI.tabs.query({active: true, currentWindow: true}, (tabs) => {
+        if (tabs[0]) {
+          browserAPI.tabs.sendMessage(tabs[0].id, {
+            action: 'updateWordMode',
+            enabled: false
+          }).catch(() => {
+            // Ignore errors if content script not available
+          });
+        }
+      });
+      
+    } catch (error) {
+      console.error('Failed to stop Word mode:', error);
+      this.showStatus('Failed to stop Word mode', 'error');
     }
   }
 

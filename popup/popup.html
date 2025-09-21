@@ -278,6 +278,29 @@
                 <small>Custom LLM API endpoint</small>
             </div>
 
+            <div id="local-settings" class="section hidden">
+                <label for="ollama-port-input">Ollama Port:</label>
+                <input type="number" id="ollama-port-input" placeholder="11434" min="1" max="65535">
+                <small>Port where Ollama server is running (default: 11434)</small>
+                
+                <div class="button-group">
+                    <button id="refresh-models-btn" type="button" class="secondary-btn" title="Refresh Available Models">
+                        🔄 Refresh Models
+                    </button>
+                    <button id="test-ollama-btn" type="button" class="secondary-btn" title="Test Connection">
+                        🔌 Test Connection
+                    </button>
+                </div>
+                
+                <div id="available-models" class="model-list hidden">
+                    <label>Available Models:</label>
+                    <select id="model-select" size="4">
+                        <!-- Models will be populated here -->
+                    </select>
+                    <small>Select a model or enter custom model name above</small>
+                </div>
+            </div>
+
             <div class="section">
                 <h3>Local LLM Setup (Ollama)</h3>
                 <p>To use local LLMs:</p>
@@ -322,7 +345,10 @@
                         <span>Office 365 web support</span>
                     </div>
                 </div>
-                <button id="enable-word-mode" class="secondary-btn" title="Enable Word Mode">🔗 Enable Word Mode</button>
+                <div class="button-group">
+                    <button id="enable-word-mode" class="secondary-btn" title="Enable Word Mode">🔗 Enable Word Mode</button>
+                    <button id="stop-word-mode" class="stop-btn hidden" title="Stop Word Mode">🛑 Stop Word Mode</button>
+                </div>
                 <small>Optimizes AI suggestions for Microsoft Word documents</small>
             </div>
 
