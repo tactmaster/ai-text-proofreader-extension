@@ -128,29 +128,14 @@ For privacy and offline usage, set up Ollama:
 - **Endpoint URL**: Your custom LLM API endpoint
 - **Model**: Depends on your service
 
-## 🧠 Designed for Everyone, Especially Dyslexic Users
+## 🧠 Designed for Dyslexic Users
 
-This extension takes a fundamentally different approach to proofreading:
+Unlike traditional tools that assume you can spot mistakes, this extension:
 
-### 🎯 **Holistic Understanding**
-- Analyzes **entire sentences** and **context**, not just individual errors
-- Preserves your **original intent and voice** while improving clarity
-- Handles complex **dyslexic writing patterns** that traditional tools miss
-
-### 🤝 **User-Centered Design**
-- **Doesn't assume you can spot mistakes** - provides complete, corrected text
-- **No judgment of tone or style** - enhances what you wrote, doesn't change it
-- **Clear before/after** - shows exactly what was improved and why
-
-### 🔬 **AI-Powered Context**
-- Uses advanced language models that understand **meaning and intent**
-- **Better than grammar checkers** - fixes flow, readability, and comprehension
-- **Learns your style** - adapts to your writing patterns over time
-
-### 🏠 **Privacy by Design**
-- **Local processing option** - your text never leaves your computer
-- **No cloud dependency** - works offline with Ollama
-- **Your data stays yours** - no storage, no tracking, no sharing
+- **Analyzes entire sentences** - not just individual errors
+- **Preserves your voice** - improves clarity without changing your style  
+- **Provides complete fixes** - comprehensive improvements, not piecemeal corrections
+- **Respects privacy** - local processing option keeps text on your computer
 
 ## Supported LLM Models
 
