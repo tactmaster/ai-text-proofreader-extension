@@ -6,6 +6,8 @@
 
 A powerful **multi-browser extension** that works on **Chrome**, **Edge**, and **Firefox**, using AI/LLM technology to proofread and correct text in any text input field on web pages. Supports both local LLMs (via Ollama) and cloud-based services like OpenAI.
 
+> **📖 Why This Project Exists**: This extension was created to address the gaps in existing proofreading tools, especially for users with dyslexia. Most tools assume users can spot their own mistakes and focus only on minor errors. This project leverages AI's contextual understanding to provide comprehensive text improvements while respecting privacy through local processing options. [Read the full story →](PROJECT_PURPOSE.md)
+
 ## 🌐 Browser Support
 
 | Browser | Support | Manifest | Status |
@@ -125,6 +127,30 @@ For privacy and offline usage, set up Ollama:
 - **Provider**: Custom Endpoint
 - **Endpoint URL**: Your custom LLM API endpoint
 - **Model**: Depends on your service
+
+## 🧠 Designed for Everyone, Especially Dyslexic Users
+
+This extension takes a fundamentally different approach to proofreading:
+
+### 🎯 **Holistic Understanding**
+- Analyzes **entire sentences** and **context**, not just individual errors
+- Preserves your **original intent and voice** while improving clarity
+- Handles complex **dyslexic writing patterns** that traditional tools miss
+
+### 🤝 **User-Centered Design**
+- **Doesn't assume you can spot mistakes** - provides complete, corrected text
+- **No judgment of tone or style** - enhances what you wrote, doesn't change it
+- **Clear before/after** - shows exactly what was improved and why
+
+### 🔬 **AI-Powered Context**
+- Uses advanced language models that understand **meaning and intent**
+- **Better than grammar checkers** - fixes flow, readability, and comprehension
+- **Learns your style** - adapts to your writing patterns over time
+
+### 🏠 **Privacy by Design**
+- **Local processing option** - your text never leaves your computer
+- **No cloud dependency** - works offline with Ollama
+- **Your data stays yours** - no storage, no tracking, no sharing
 
 ## Supported LLM Models
 
