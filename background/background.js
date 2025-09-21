@@ -105,6 +105,10 @@ class LLMProofreader {
   constructor() {
     this.openAIEndpoint = 'https://api.openai.com/v1/chat/completions';
     
+    // Initialize Privacy Manager
+    this.privacyManager = null;
+    this.initPrivacyManager();
+    
     // Comprehensive provider configurations
     this.providerConfigs = {
       // Local/Self-hosted providers
@@ -291,6 +295,34 @@ class LLMProofreader {
       }
     } catch (error) {
       console.error('Failed to load settings:', error);
+    }
+  }
+
+  async initPrivacyManager() {
+    try {
+      // Import PrivacyManager directly (it's defined in this context)
+      // Load the privacy manager script
+      const privacyManagerScript = await fetch(chrome.runtime.getURL('shared/privacy-manager.js'))
+        .then(response => response.text());
+      
+      // Execute the script to define PrivacyManager
+      eval(privacyManagerScript);
+      
+      // Initialize Privacy Manager
+      this.privacyManager = new PrivacyManager(browserAPI);
+      console.log('[DEBUG] Privacy Manager initialized successfully');
+    } catch (error) {
+      console.error('Failed to initialize Privacy Manager:', error);
+      // Create a fallback privacy manager that denies everything
+      this.privacyManager = {
+        validateDataTransmission: () => ({ allowed: false, reason: 'Privacy Manager initialization failed' }),
+        logDataTransmission: () => Promise.resolve(),
+        validateProviderSelection: () => false,
+        getPrivacyStatus: () => ({ protectionLevel: 'error' }),
+        saveSettings: () => Promise.resolve(),
+        getAuditLog: () => [],
+        clearAuditLog: () => Promise.resolve()
+      };
     }
   }
 
@@ -830,7 +862,7 @@ class LLMProofreader {
     return this.providerConfigs[provider] || null;
   }
 
-  async proofreadText(text) {
+  async proofreadText(text, hasUserConsent = false, metadata = {}) {
     console.log(`[DEBUG] Starting proofreading with provider: ${this.settings.provider}`);
     console.log(`[DEBUG] Settings:`, { 
       provider: this.settings.provider, 
@@ -838,6 +870,29 @@ class LLMProofreader {
       hasApiKey: !!this.settings.apiKey,
       customEndpoint: this.settings.customEndpoint 
     });
+    
+    // Privacy validation before sending any data
+    if (this.privacyManager) {
+      const validation = this.privacyManager.validateDataTransmission(
+        text, 
+        this.settings.provider, 
+        this.settings.model, 
+        hasUserConsent
+      );
+      
+      if (!validation.allowed) {
+        throw new Error(`Privacy protection: ${validation.reason}`);
+      }
+      
+      // Log the data transmission for audit
+      await this.privacyManager.logDataTransmission(
+        text, 
+        this.settings.provider, 
+        this.settings.model, 
+        'proofread',
+        metadata
+      );
+    }
     
     const prompt = `INSTRUCTION: Correct spelling and grammar errors in the text below. Output ONLY the corrected text. Do NOT include any introductory phrases, explanations, or conversational text.
 
@@ -1212,9 +1267,32 @@ Quick test: Visit http://127.0.0.1:11434 in your browser`);
     return cleaned;
   }
 
-  async proofreadTextWithContext(text, context) {
+  async proofreadTextWithContext(text, context, hasUserConsent = false, metadata = {}) {
     console.log(`[DEBUG] Starting context-aware proofreading`);
     console.log(`[DEBUG] Context:`, context);
+    
+    // Privacy validation before sending any data
+    if (this.privacyManager) {
+      const validation = this.privacyManager.validateDataTransmission(
+        text, 
+        this.settings.provider, 
+        this.settings.model, 
+        hasUserConsent
+      );
+      
+      if (!validation.allowed) {
+        throw new Error(`Privacy protection: ${validation.reason}`);
+      }
+      
+      // Log the data transmission for audit
+      await this.privacyManager.logDataTransmission(
+        text, 
+        this.settings.provider, 
+        this.settings.model, 
+        'proofread-with-context',
+        { ...metadata, context: context.type || 'unknown' }
+      );
+    }
     
     try {
       const response = await this.queryProvider(context.prompt);
@@ -1227,9 +1305,32 @@ Quick test: Visit http://127.0.0.1:11434 in your browser`);
     }
   }
 
-  async getSuggestionsWithContext(text, context) {
+  async getSuggestionsWithContext(text, context, hasUserConsent = false, metadata = {}) {
     console.log(`[DEBUG] Getting context-aware suggestions`);
     console.log(`[DEBUG] Context:`, context);
+    
+    // Privacy validation before sending any data
+    if (this.privacyManager) {
+      const validation = this.privacyManager.validateDataTransmission(
+        text, 
+        this.settings.provider, 
+        this.settings.model, 
+        hasUserConsent
+      );
+      
+      if (!validation.allowed) {
+        throw new Error(`Privacy protection: ${validation.reason}`);
+      }
+      
+      // Log the data transmission for audit
+      await this.privacyManager.logDataTransmission(
+        text, 
+        this.settings.provider, 
+        this.settings.model, 
+        'suggestions-with-context',
+        { ...metadata, context: context.type || 'unknown' }
+      );
+    }
     
     // Modify the prompt to get suggestions instead of corrections
     const suggestionPrompt = context.prompt.replace(
@@ -1357,7 +1458,30 @@ Quick test: Visit http://127.0.0.1:11434 in your browser`);
     return cleanedResponse;
   }
 
-  async getSuggestions(text) {
+  async getSuggestions(text, hasUserConsent = false, metadata = {}) {
+    // Privacy validation before sending any data
+    if (this.privacyManager) {
+      const validation = this.privacyManager.validateDataTransmission(
+        text, 
+        this.settings.provider, 
+        this.settings.model, 
+        hasUserConsent
+      );
+      
+      if (!validation.allowed) {
+        throw new Error(`Privacy protection: ${validation.reason}`);
+      }
+      
+      // Log the data transmission for audit
+      await this.privacyManager.logDataTransmission(
+        text, 
+        this.settings.provider, 
+        this.settings.model, 
+        'suggestions',
+        metadata
+      );
+    }
+    
     const prompt = `Analyze the following text and provide specific spelling and grammar corrections. Return a JSON array of suggestions with the format: [{"original": "mistake", "corrected": "correction", "type": "spelling|grammar", "explanation": "brief explanation"}].
 
 Text to analyze:
@@ -1400,7 +1524,15 @@ if (browserAPI && browserAPI.runtime && browserAPI.runtime.onMessage) {
     
     switch (request.action) {
       case 'proofread':
-        proofreader.proofreadText(request.text)
+        // Extract consent and metadata from request
+        const hasConsent = request.hasUserConsent || false;
+        const metadata = {
+          url: sender.tab?.url || 'unknown',
+          userAgent: request.userAgent || 'unknown',
+          timestamp: new Date().toISOString()
+        };
+        
+        proofreader.proofreadText(request.text, hasConsent, metadata)
           .then(correctedText => {
             sendResponse({ success: true, correctedText });
           })
@@ -1410,7 +1542,15 @@ if (browserAPI && browserAPI.runtime && browserAPI.runtime.onMessage) {
         return true; // Will respond asynchronously
 
       case 'proofreadWithContext':
-        proofreader.proofreadTextWithContext(request.text, request.context)
+        const hasConsentCtx = request.hasUserConsent || false;
+        const metadataCtx = {
+          url: sender.tab?.url || 'unknown',
+          context: request.context,
+          userAgent: request.userAgent || 'unknown',
+          timestamp: new Date().toISOString()
+        };
+        
+        proofreader.proofreadTextWithContext(request.text, request.context, hasConsentCtx, metadataCtx)
           .then(correctedText => {
             sendResponse({ success: true, correctedText });
           })
@@ -1420,7 +1560,14 @@ if (browserAPI && browserAPI.runtime && browserAPI.runtime.onMessage) {
         return true; // Will respond asynchronously
 
       case 'getSuggestions':
-        proofreader.getSuggestions(request.text)
+        const hasSuggestionsConsent = request.hasUserConsent || false;
+        const suggestionsMetadata = {
+          url: sender.tab?.url || 'unknown',
+          userAgent: request.userAgent || 'unknown',
+          timestamp: new Date().toISOString()
+        };
+        
+        proofreader.getSuggestions(request.text, hasSuggestionsConsent, suggestionsMetadata)
           .then(suggestions => {
             sendResponse({ success: true, suggestions });
           })
@@ -1430,7 +1577,15 @@ if (browserAPI && browserAPI.runtime && browserAPI.runtime.onMessage) {
         return true; // Will respond asynchronously
 
       case 'getSuggestionsWithContext':
-        proofreader.getSuggestionsWithContext(request.text, request.context)
+        const hasSuggestionsCtxConsent = request.hasUserConsent || false;
+        const suggestionsCtxMetadata = {
+          url: sender.tab?.url || 'unknown',
+          context: request.context,
+          userAgent: request.userAgent || 'unknown',
+          timestamp: new Date().toISOString()
+        };
+        
+        proofreader.getSuggestionsWithContext(request.text, request.context, hasSuggestionsCtxConsent, suggestionsCtxMetadata)
           .then(suggestions => {
             sendResponse({ success: true, suggestions });
           })
@@ -1442,6 +1597,51 @@ if (browserAPI && browserAPI.runtime && browserAPI.runtime.onMessage) {
       case 'getSettings':
         sendResponse({ settings: proofreader.settings });
         break;
+
+      case 'getPrivacyStatus':
+        if (proofreader.privacyManager) {
+          sendResponse({ success: true, privacyStatus: proofreader.privacyManager.getPrivacyStatus() });
+        } else {
+          sendResponse({ success: false, error: 'Privacy Manager not available' });
+        }
+        break;
+
+      case 'savePrivacySettings':
+        if (proofreader.privacyManager) {
+          proofreader.privacyManager.saveSettings(request.settings)
+            .then(() => {
+              sendResponse({ success: true });
+            })
+            .catch(error => {
+              sendResponse({ success: false, error: error.message });
+            });
+        } else {
+          sendResponse({ success: false, error: 'Privacy Manager not available' });
+        }
+        return true; // Will respond asynchronously
+
+      case 'getAuditLog':
+        if (proofreader.privacyManager) {
+          const log = proofreader.privacyManager.getAuditLog(request.limit || 50);
+          sendResponse({ success: true, auditLog: log });
+        } else {
+          sendResponse({ success: false, error: 'Privacy Manager not available' });
+        }
+        break;
+
+      case 'clearAuditLog':
+        if (proofreader.privacyManager) {
+          proofreader.privacyManager.clearAuditLog()
+            .then(() => {
+              sendResponse({ success: true });
+            })
+            .catch(error => {
+              sendResponse({ success: false, error: error.message });
+            });
+        } else {
+          sendResponse({ success: false, error: 'Privacy Manager not available' });
+        }
+        return true; // Will respond asynchronously
 
       case 'saveSettings':
         proofreader.saveSettings(request.settings)

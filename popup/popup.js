@@ -25,12 +25,14 @@ class PopupController {
     if (browserAPI) {
       this.loadSettings();
       this.loadContextSettings();
+      this.loadPrivacyStatus();
     } else {
       console.error('browserAPI not available, retrying in 100ms...');
       setTimeout(() => {
         if (browserAPI) {
           this.loadSettings();
           this.loadContextSettings();
+          this.loadPrivacyStatus();
         } else {
           console.error('browserAPI still not available after retry');
         }
@@ -124,6 +126,9 @@ class PopupController {
 
     // Context tab event listeners
     this.setupContextEventListeners();
+    
+    // Privacy tab event listeners
+    this.setupPrivacyEventListeners();
   }
 
   setupContextEventListeners() {
@@ -170,6 +175,48 @@ class PopupController {
 
     document.getElementById('import-settings').addEventListener('click', () => {
       this.importSettings();
+    });
+  }
+
+  setupPrivacyEventListeners() {
+    // Privacy controls
+    document.getElementById('enable-audit-logging').addEventListener('change', () => {
+      this.updatePrivacySettings();
+    });
+
+    document.getElementById('strict-consent').addEventListener('change', () => {
+      this.updatePrivacySettings();
+    });
+
+    document.getElementById('provider-validation').addEventListener('change', () => {
+      this.updatePrivacySettings();
+    });
+
+    // Audit log controls
+    document.getElementById('view-audit-log').addEventListener('click', () => {
+      this.toggleAuditLog();
+    });
+
+    document.getElementById('export-audit-log').addEventListener('click', () => {
+      this.exportAuditLog();
+    });
+
+    document.getElementById('clear-audit-log').addEventListener('click', () => {
+      this.clearAuditLog();
+    });
+
+    // Privacy settings
+    document.getElementById('save-privacy-settings').addEventListener('click', () => {
+      this.savePrivacySettings();
+    });
+
+    document.getElementById('reset-privacy-settings').addEventListener('click', () => {
+      this.resetPrivacySettings();
+    });
+
+    // Load privacy status on tab activation
+    document.querySelector('[data-tab="privacy"]').addEventListener('click', () => {
+      this.loadPrivacyStatus();
     });
   }
 
@@ -1120,6 +1167,205 @@ class PopupController {
            settings.prompts &&
            typeof settings.websites === 'object' &&
            typeof settings.prompts === 'object';
+  }
+
+  // Privacy Management Methods
+  async loadPrivacyStatus() {
+    try {
+      // Update privacy status indicators
+      const leakageStatus = document.getElementById('leakage-status');
+      const consentStatus = document.getElementById('consent-status');
+      const auditStatus = document.getElementById('audit-status');
+
+      // Get current privacy settings
+      const settings = await browserAPI.storage.local.get(['privacySettings']);
+      const privacySettings = settings.privacySettings || {
+        enableAuditLogging: true,
+        strictConsent: true,
+        providerValidation: true
+      };
+
+      // Update status indicators
+      leakageStatus.textContent = privacySettings.providerValidation ? 'Active' : 'Disabled';
+      leakageStatus.style.color = privacySettings.providerValidation ? '#4CAF50' : '#dc3545';
+
+      consentStatus.textContent = privacySettings.strictConsent ? 'Enabled' : 'Disabled';
+      consentStatus.style.color = privacySettings.strictConsent ? '#4CAF50' : '#dc3545';
+
+      auditStatus.textContent = privacySettings.enableAuditLogging ? 'Enabled' : 'Disabled';
+      auditStatus.style.color = privacySettings.enableAuditLogging ? '#4CAF50' : '#dc3545';
+
+      // Update checkbox states
+      document.getElementById('enable-audit-logging').checked = privacySettings.enableAuditLogging;
+      document.getElementById('strict-consent').checked = privacySettings.strictConsent;
+      document.getElementById('provider-validation').checked = privacySettings.providerValidation;
+
+      // Load audit log count
+      await this.updateAuditLogCount();
+
+    } catch (error) {
+      console.error('Error loading privacy status:', error);
+    }
+  }
+
+  async updatePrivacySettings() {
+    try {
+      const privacySettings = {
+        enableAuditLogging: document.getElementById('enable-audit-logging').checked,
+        strictConsent: document.getElementById('strict-consent').checked,
+        providerValidation: document.getElementById('provider-validation').checked
+      };
+
+      await browserAPI.storage.local.set({ privacySettings });
+      
+      // Update status indicators
+      await this.loadPrivacyStatus();
+      
+      console.log('Privacy settings updated:', privacySettings);
+    } catch (error) {
+      console.error('Error updating privacy settings:', error);
+    }
+  }
+
+  async toggleAuditLog() {
+    try {
+      const container = document.getElementById('audit-log-container');
+      const isHidden = container.classList.contains('hidden');
+
+      if (isHidden) {
+        await this.loadAuditLog();
+        container.classList.remove('hidden');
+        document.getElementById('view-audit-log').textContent = '📋 Hide Log';
+      } else {
+        container.classList.add('hidden');
+        document.getElementById('view-audit-log').textContent = '📋 View Log';
+      }
+    } catch (error) {
+      console.error('Error toggling audit log:', error);
+    }
+  }
+
+  async loadAuditLog() {
+    try {
+      const result = await browserAPI.storage.local.get(['auditLog']);
+      const auditLog = result.auditLog || [];
+      
+      const content = document.getElementById('audit-log-content');
+      
+      if (auditLog.length === 0) {
+        content.innerHTML = '<div class="audit-empty">No audit entries yet</div>';
+        return;
+      }
+
+      // Show recent entries (last 10)
+      const recentEntries = auditLog.slice(-10).reverse();
+      
+      content.innerHTML = recentEntries.map(entry => `
+        <div class="audit-entry">
+          <div class="audit-timestamp">${new Date(entry.timestamp).toLocaleString()}</div>
+          <div class="audit-provider">Provider: ${entry.provider}</div>
+          <div class="audit-data">Data: ${entry.dataPreview}...</div>
+        </div>
+      `).join('');
+
+    } catch (error) {
+      console.error('Error loading audit log:', error);
+    }
+  }
+
+  async updateAuditLogCount() {
+    try {
+      const result = await browserAPI.storage.local.get(['auditLog']);
+      const auditLog = result.auditLog || [];
+      
+      document.getElementById('audit-count').textContent = `${auditLog.length} entries`;
+    } catch (error) {
+      console.error('Error updating audit log count:', error);
+    }
+  }
+
+  async exportAuditLog() {
+    try {
+      const result = await browserAPI.storage.local.get(['auditLog']);
+      const auditLog = result.auditLog || [];
+      
+      if (auditLog.length === 0) {
+        alert('No audit log entries to export');
+        return;
+      }
+
+      const dataStr = JSON.stringify(auditLog, null, 2);
+      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+      
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(dataBlob);
+      link.download = `ai-proofreader-audit-log-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      console.log('Audit log exported successfully');
+    } catch (error) {
+      console.error('Error exporting audit log:', error);
+      alert('Error exporting audit log');
+    }
+  }
+
+  async clearAuditLog() {
+    try {
+      const confirmed = confirm('Are you sure you want to clear the audit log? This action cannot be undone.');
+      
+      if (confirmed) {
+        await browserAPI.storage.local.set({ auditLog: [] });
+        await this.loadAuditLog();
+        await this.updateAuditLogCount();
+        console.log('Audit log cleared');
+      }
+    } catch (error) {
+      console.error('Error clearing audit log:', error);
+    }
+  }
+
+  async savePrivacySettings() {
+    try {
+      await this.updatePrivacySettings();
+      
+      // Show confirmation
+      const button = document.getElementById('save-privacy-settings');
+      const originalText = button.textContent;
+      button.textContent = '✅ Saved!';
+      button.style.background = '#4CAF50';
+      
+      setTimeout(() => {
+        button.textContent = originalText;
+        button.style.background = '';
+      }, 2000);
+
+    } catch (error) {
+      console.error('Error saving privacy settings:', error);
+      alert('Error saving privacy settings');
+    }
+  }
+
+  async resetPrivacySettings() {
+    try {
+      const confirmed = confirm('Reset privacy settings to defaults?');
+      
+      if (confirmed) {
+        const defaultSettings = {
+          enableAuditLogging: true,
+          strictConsent: true,
+          providerValidation: true
+        };
+
+        await browserAPI.storage.local.set({ privacySettings: defaultSettings });
+        await this.loadPrivacyStatus();
+        
+        console.log('Privacy settings reset to defaults');
+      }
+    } catch (error) {
+      console.error('Error resetting privacy settings:', error);
+    }
   }
 }
 

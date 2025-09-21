@@ -532,6 +532,8 @@ class TextBoxProofreader {
       const response = await browserAPI.runtime.sendMessage({
         action: 'proofreadWithContext',
         text: text,
+        hasUserConsent: true, // User explicitly clicked the button
+        userAgent: navigator.userAgent,
         context: {
           website: this.currentContext.key,
           type: this.currentContext.type,
@@ -584,6 +586,8 @@ class TextBoxProofreader {
       const response = await browserAPI.runtime.sendMessage({
         action: 'getSuggestionsWithContext',
         text: text,
+        hasUserConsent: true, // User explicitly clicked the suggestions button
+        userAgent: navigator.userAgent,
         context: {
           website: this.currentContext.key,
           type: this.currentContext.type,
