@@ -294,9 +294,24 @@ class LLMProofreader {
     }
   }
 
+  // Validate port number (must be integer between 1 and 65535)
+  validatePort(port) {
+    const portNum = Number(port);
+    if (
+      Number.isInteger(portNum) &&
+      portNum >= 1 &&
+      portNum <= 65535
+    ) {
+      return String(portNum);
+    } else {
+      console.warn(`[AI Proofreader] Invalid Ollama port: "${port}". Falling back to default port 11434.`);
+      return '11434';
+    }
+  }
+
   // Get dynamic Ollama endpoint based on configured port
   getOllamaEndpoint(endpoint = '/api/generate') {
-    const port = this.settings.ollamaPort || '11434';
+    const port = this.validatePort(this.settings.ollamaPort);
     return `http://127.0.0.1:${port}${endpoint}`;
   }
 
