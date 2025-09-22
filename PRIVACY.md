@@ -183,44 +183,44 @@ Test files:
 
 ### Core Principles
 
-1. **Proactive Protection**: Privacy protections are enabled by default
-2. **Privacy as Default**: Strictest privacy settings are the default
-3. **Transparency**: Complete audit trail of all data processing
-4. **User Control**: Granular control over all privacy features
-5. **Local Processing Preference**: Encourages use of local LLMs
+1. **Opt-in Privacy**: Privacy protections are available but optional for user convenience
+2. **User Control**: Users can enable privacy features based on their needs
+3. **Transparency**: Complete audit trail available when enabled
+4. **Granular Control**: Individual control over each privacy feature
+5. **Local Processing Preference**: Encourages use of local LLMs for maximum privacy
 
 ### Default Privacy Configuration
 
-- ✅ Audit logging: **Enabled**
-- ✅ Strict consent: **Enabled**  
-- ✅ Provider validation: **Enabled**
-- ✅ Data leakage prevention: **Active**
+- ❌ Audit logging: **Disabled** (can be enabled in Privacy tab)
+- ❌ Strict consent: **Disabled** (can be enabled in Privacy tab)
+- ❌ Provider validation: **Disabled** (can be enabled in Privacy tab)
+- ✅ Privacy controls available: **Available in Privacy tab**
 
 ## 🚀 Best Practices for Users
 
-### Maximum Privacy Configuration
+### For Users Wanting Maximum Privacy
 1. Use local LLM providers (Ollama recommended)
-2. Enable all privacy protections
-3. Regularly review audit log
+2. Enable all privacy protections in Privacy tab
+3. Enable audit logging to track data usage
 4. Use strict consent mode
-5. Export audit logs for record keeping
+5. Enable provider validation
 
-### Balanced Privacy Configuration
-1. Use privacy-conscious cloud providers
-2. Keep audit logging enabled
-3. Review privacy status regularly
-4. Maintain provider validation
-5. Monitor data transmissions
+### For General Use (Default Configuration)
+1. Privacy controls available but optional
+2. Direct connection to selected LLM provider
+3. Standard browser extension security
+4. Option to enable privacy features anytime
+5. Local LLM support for enhanced privacy
 
 ## 🔧 Technical Implementation
 
 ### Browser Storage Schema
 ```javascript
-// Privacy settings
+// Privacy settings (defaults to false for user convenience)
 privacySettings: {
-  enableAuditLogging: boolean,
-  strictConsent: boolean,
-  providerValidation: boolean
+  enableAuditLogging: boolean, // default: false
+  strictConsent: boolean,      // default: false  
+  providerValidation: boolean  // default: false
 }
 
 // Audit log

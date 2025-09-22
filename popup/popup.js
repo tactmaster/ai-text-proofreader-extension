@@ -1180,9 +1180,9 @@ class PopupController {
       // Get current privacy settings
       const settings = await browserAPI.storage.local.get(['privacySettings']);
       const privacySettings = settings.privacySettings || {
-        enableAuditLogging: true,
-        strictConsent: true,
-        providerValidation: true
+        enableAuditLogging: false,
+        strictConsent: false,
+        providerValidation: false
       };
 
       // Update status indicators
@@ -1353,9 +1353,9 @@ class PopupController {
       
       if (confirmed) {
         const defaultSettings = {
-          enableAuditLogging: true,
-          strictConsent: true,
-          providerValidation: true
+          enableAuditLogging: false,
+          strictConsent: false,
+          providerValidation: false
         };
 
         await browserAPI.storage.local.set({ privacySettings: defaultSettings });
