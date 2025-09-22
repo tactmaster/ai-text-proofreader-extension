@@ -49,6 +49,7 @@
         <div class="tabs">
             <button class="tab-button active" data-tab="proofread">Proofread</button>
             <button class="tab-button" data-tab="context">Context</button>
+            <button class="tab-button" data-tab="privacy">Privacy</button>
             <button class="tab-button" data-tab="settings">Settings</button>
         </div>
 
@@ -319,6 +320,107 @@
             </div>
 
             <div id="connection-status" class="status hidden"></div>
+        </div>
+
+        <div id="privacy-tab" class="tab-content">
+            <div class="section">
+                <h3>🔒 Privacy Protection Status</h3>
+                <div id="privacy-status" class="privacy-status">
+                    <div class="status-item">
+                        <span class="status-icon">🛡️</span>
+                        <span class="status-text">Data Leakage Prevention: <strong id="leakage-status">Active</strong></span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-icon">✋</span>
+                        <span class="status-text">Explicit Consent Required: <strong id="consent-status">Enabled</strong></span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-icon">📝</span>
+                        <span class="status-text">Audit Logging: <strong id="audit-status">Enabled</strong></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>🔧 Privacy Controls</h3>
+                
+                <div class="privacy-control">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="enable-audit-logging">
+                        <span class="checkmark"></span>
+                        Enable Audit Logging
+                    </label>
+                    <small>Record all data sent to LLM providers for transparency</small>
+                </div>
+
+                <div class="privacy-control">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="strict-consent">
+                        <span class="checkmark"></span>
+                        Strict Consent Mode
+                    </label>
+                    <small>Require explicit user action before sending any data</small>
+                </div>
+
+                <div class="privacy-control">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="provider-validation">
+                        <span class="checkmark"></span>
+                        Provider Validation
+                    </label>
+                    <small>Prevent data leakage to non-selected models</small>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>📊 Audit Log</h3>
+                <div class="audit-controls">
+                    <div class="button-group">
+                        <button id="view-audit-log" class="secondary-btn" title="View Audit Log">📋 View Log</button>
+                        <button id="export-audit-log" class="secondary-btn" title="Export Log">💾 Export</button>
+                        <button id="clear-audit-log" class="danger-btn" title="Clear Log">🗑️ Clear</button>
+                    </div>
+                </div>
+                
+                <div id="audit-log-container" class="audit-log-container hidden">
+                    <div class="audit-log-header">
+                        <span>Recent Data Transmissions</span>
+                        <span id="audit-count" class="audit-count">0 entries</span>
+                    </div>
+                    <div id="audit-log-content" class="audit-log-content">
+                        <div class="audit-empty">No audit entries yet</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>🔐 Data Protection Info</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <h4>Local Processing</h4>
+                        <p>When using local LLM providers (Ollama), your data never leaves your computer.</p>
+                    </div>
+                    <div class="info-item">
+                        <h4>Explicit Consent</h4>
+                        <p>Data is only sent to LLM providers when you explicitly click action buttons.</p>
+                    </div>
+                    <div class="info-item">
+                        <h4>Audit Trail</h4>
+                        <p>Complete log of all data transmissions with timestamps and provider details.</p>
+                    </div>
+                    <div class="info-item">
+                        <h4>Provider Isolation</h4>
+                        <p>Validation ensures data only goes to your selected LLM provider.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="button-group">
+                    <button id="save-privacy-settings" class="primary-btn" title="Save Privacy Settings">💾 Save Privacy Settings</button>
+                    <button id="reset-privacy-settings" class="secondary-btn" title="Reset to Defaults">🔄 Reset</button>
+                </div>
+            </div>
         </div>
 
         <footer>
