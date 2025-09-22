@@ -67,6 +67,58 @@ jobs:
         echo "🔍 Checksums:"
         cat dist/checksums.txt
         
+    - name: Create GitHub Release
+      if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+      id: create_release
+      uses: softprops/action-gh-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref_name }}
+        name: AI Text Proofreader v${{ steps.version.outputs.version }}
+        body: |
+          # AI Text Proofreader v${{ steps.version.outputs.version }}
+          
+          ## 🌐 Multi-Browser Extension for Chrome, Edge & Firefox
+          
+          This release includes packages for **Chrome**, **Edge**, and **Firefox** browsers.
+          
+          ## 📦 Downloads
+          
+          - **Chrome/Edge**: `ai-text-proofreader-chrome-edge-v${{ steps.version.outputs.version }}.zip`
+          - **Firefox**: `ai-text-proofreader-firefox-v${{ steps.version.outputs.version }}.zip`
+          - **Installation Guide**: `INSTALLATION.md`
+          - **Checksums**: `checksums.txt`
+          
+          ## ✨ Features
+          
+          - 🤖 **AI-powered text proofreading** and correction
+          - 🎯 **Context-aware suggestions** (Email, GitHub, Social Media, etc.)
+          - 🔧 **Customizable settings** and prompts
+          - 🌐 **Multi-provider support**: Local (Ollama) and cloud (OpenAI) LLMs
+          - 📝 **Formatting preservation** (newlines, bullets, code blocks)
+          - 🔒 **Privacy-focused** with local LLM support
+          - 🌍 **Cross-browser compatibility** (Chrome, Edge, Firefox)
+          
+          ## 🔧 Installation
+          
+          Download the appropriate package for your browser and follow the instructions in `INSTALLATION.md`.
+          
+          ## 🔐 Verification
+          
+          Verify download integrity using the SHA256 checksums provided in `checksums.txt`.
+          
+          ---
+          
+          **Full Changelog**: See commit history for detailed changes
+        draft: false
+        prerelease: false
+        files: |
+          dist/ai-text-proofreader-chrome-edge-v${{ steps.version.outputs.version }}.zip
+          dist/ai-text-proofreader-firefox-v${{ steps.version.outputs.version }}.zip
+          dist/checksums.txt
+          INSTALLATION.md
+        
     - name: Upload Chrome/Edge package as artifact
       uses: actions/upload-artifact@v4
       with:
@@ -83,38 +135,6 @@ jobs:
           dist/ai-text-proofreader-firefox-v${{ steps.version.outputs.version }}.zip
           dist/checksums.txt
           
-    - name: Upload Chrome/Edge package to release
-      if: github.event_name == 'release'
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_path: dist/ai-text-proofreader-chrome-edge-v${{ steps.version.outputs.version }}.zip
-        asset_name: ai-text-proofreader-chrome-edge-v${{ steps.version.outputs.version }}.zip
-        asset_content_type: application/zip
-        
-    - name: Upload Firefox package to release
-      if: github.event_name == 'release'
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_path: dist/ai-text-proofreader-firefox-v${{ steps.version.outputs.version }}.zip
-        asset_name: ai-text-proofreader-firefox-v${{ steps.version.outputs.version }}.zip
-        asset_content_type: application/zip
-        
-    - name: Upload checksums to release
-      if: github.event_name == 'release'
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_path: dist/checksums.txt
-        asset_name: checksums.txt
-        asset_content_type: text/plain
         
     - name: Generate multi-browser installation instructions
       run: |
@@ -205,70 +225,3 @@ jobs:
         
         **Multi-Browser Extension** | **v${{ steps.version.outputs.version }}** | **Built with ❤️ for Chrome, Edge & Firefox**
         EOF
-        
-    - name: Upload installation instructions to release
-      if: github.event_name == 'release'
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_path: INSTALLATION.md
-        asset_name: INSTALLATION.md
-        asset_content_type: text/markdown
-        
-    - name: Generate installation instructions
-      run: |
-        cat > INSTALLATION.md << 'EOF'
-        # AI Text Proofreader v${{ steps.version.outputs.version }} - Installation Guide
-        
-        ## Chrome/Edge Installation (Developer Mode)
-        
-        1. Download the `ai-text-proofreader-v${{ steps.version.outputs.version }}.zip` file
-        2. Extract the ZIP file to a folder on your computer
-        3. Open Chrome/Edge and go to `chrome://extensions/` or `edge://extensions/`
-        4. Enable "Developer mode" (toggle in top-right corner)
-        5. Click "Load unpacked" and select the extracted folder
-        6. The extension should now appear in your extensions list
-        
-        ## Features
-        
-        - 🤖 AI-powered text proofreading and correction
-        - 🎯 Context-aware suggestions (Email, GitHub, etc.)
-        - 🔧 Customizable settings and prompts
-        - 🌐 Support for local (Ollama) and cloud (OpenAI) LLMs
-        - 📝 Preserves formatting (newlines, bullets, code blocks)
-        
-        ## Configuration
-        
-        1. Click the extension icon in your browser toolbar
-        2. Go to Settings tab to configure your AI provider
-        3. Go to Context tab to customize website categories and prompts
-        
-        ## Supported AI Providers
-        
-        - **Ollama (Local)**: Run AI models locally for privacy
-        - **OpenAI**: Use GPT models via API key
-        - **Custom Endpoint**: Connect to your own AI service
-        
-        ## Verification
-        
-        **SHA256 Checksum**: See checksums.txt file
-        
-        Verify the download integrity by checking the SHA256 hash matches the provided checksum.
-        
-        ---
-        
-        **Support**: For issues or questions, please visit the GitHub repository.
-        EOF
-        
-    - name: Upload installation instructions
-      if: github.event_name == 'release'
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_path: INSTALLATION.md
-        asset_name: INSTALLATION.md
-        asset_content_type: text/markdown
