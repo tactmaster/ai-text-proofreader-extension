@@ -300,13 +300,9 @@ class LLMProofreader {
 
   async initPrivacyManager() {
     try {
-      // Import PrivacyManager directly (it's defined in this context)
-      // Load the privacy manager script
-      const privacyManagerScript = await fetch(chrome.runtime.getURL('shared/privacy-manager.js'))
-        .then(response => response.text());
-      
-      // Execute the script to define PrivacyManager
-      eval(privacyManagerScript);
+      // Import PrivacyManager using importScripts (secure for service workers)
+      // Note: importScripts is synchronous and secure, no eval needed
+      importScripts('shared/privacy-manager.js');
       
       // Initialize Privacy Manager
       this.privacyManager = new PrivacyManager(browserAPI);
