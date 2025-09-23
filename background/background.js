@@ -303,6 +303,10 @@ class LLMProofreader {
       // For Manifest V3, we need to import the module differently
       // Since importScripts doesn't work reliably in service workers, 
       // we'll implement a simple privacy manager inline
+      
+      // Capture browserAPI reference for use in privacy manager methods
+      const api = browserAPI;
+      
       this.privacyManager = {
         settings: {
           enableAuditLogging: false,
@@ -312,7 +316,7 @@ class LLMProofreader {
         
         async loadSettings() {
           try {
-            const result = await browserAPI.storage.local.get(['privacySettings']);
+            const result = await api.storage.local.get(['privacySettings']);
             if (result.privacySettings) {
               this.settings = { ...this.settings, ...result.privacySettings };
             }
@@ -324,7 +328,7 @@ class LLMProofreader {
         async saveSettings(newSettings) {
           try {
             this.settings = { ...this.settings, ...newSettings };
-            await browserAPI.storage.local.set({ privacySettings: this.settings });
+            await api.storage.local.set({ privacySettings: this.settings });
           } catch (error) {
             console.error('[Privacy Manager] Failed to save settings:', error);
             throw error;
