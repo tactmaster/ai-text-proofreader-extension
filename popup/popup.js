@@ -218,6 +218,80 @@ class PopupController {
     document.querySelector('[data-tab="privacy"]').addEventListener('click', () => {
       this.loadPrivacyStatus();
     });
+
+    // OpenAI Guided Setup Event Listeners
+    this.setupGuidedSetupListeners();
+  }
+
+  setupGuidedSetupListeners() {
+    // Main setup buttons
+    document.getElementById('openai-guided-setup-btn').addEventListener('click', () => {
+      this.openGuidedSetup();
+    });
+
+    document.getElementById('openai-manual-setup-btn').addEventListener('click', () => {
+      this.showManualSetup();
+    });
+
+    // Modal controls
+    document.getElementById('close-setup-modal').addEventListener('click', () => {
+      this.closeGuidedSetup();
+    });
+
+    // Step navigation
+    document.getElementById('open-openai-platform').addEventListener('click', () => {
+      this.openOpenAIPlatform();
+    });
+
+    document.getElementById('skip-to-manual').addEventListener('click', () => {
+      this.skipToManualInModal();
+    });
+
+    document.getElementById('next-to-step-3').addEventListener('click', () => {
+      this.goToStep(3);
+    });
+
+    document.getElementById('back-to-step-1').addEventListener('click', () => {
+      this.goToStep(1);
+    });
+
+    document.getElementById('back-to-step-2').addEventListener('click', () => {
+      this.goToStep(2);
+    });
+
+    // API key validation
+    document.getElementById('setup-validate-key').addEventListener('click', () => {
+      this.validateSetupAPIKey();
+    });
+
+    document.getElementById('api-key-validate-btn').addEventListener('click', () => {
+      this.validateManualAPIKey();
+    });
+
+    // Setup completion
+    document.getElementById('complete-setup').addEventListener('click', () => {
+      this.completeSetup();
+    });
+
+    document.getElementById('finish-setup').addEventListener('click', () => {
+      this.finishSetup();
+    });
+
+    // Connection management
+    document.getElementById('openai-refresh-models-btn').addEventListener('click', () => {
+      this.refreshOpenAIModels();
+    });
+
+    document.getElementById('openai-disconnect-btn').addEventListener('click', () => {
+      this.disconnectOpenAI();
+    });
+
+    // Modal close on backdrop click
+    document.getElementById('openai-setup-modal').addEventListener('click', (e) => {
+      if (e.target.id === 'openai-setup-modal') {
+        this.closeGuidedSetup();
+      }
+    });
   }
 
   async loadSettings() {
@@ -278,8 +352,14 @@ class PopupController {
       setTimeout(() => this.refreshAvailableModels(), 500);
     } else if (commercialAPIs.includes(provider) || openSourceAPIs.includes(provider)) {
       document.getElementById('openai-settings').classList.remove('hidden');
-      // Update label and placeholder based on provider
-      this.updateAPIKeyLabel(provider);
+      
+      if (provider === 'openai') {
+        // Special handling for OpenAI with guided setup
+        this.updateOpenAIConnectionStatus();
+      } else {
+        // Other providers use the standard API key interface
+        this.updateAPIKeyLabel(provider);
+      }
     } else if (customAPIs.includes(provider)) {
       document.getElementById('custom-settings').classList.remove('hidden');
       // Update endpoint placeholder based on provider
@@ -288,6 +368,38 @@ class PopupController {
     
     // Update model suggestions
     this.updateModelSuggestions(provider);
+  }
+
+  updateOpenAIConnectionStatus() {
+    const apiKey = document.getElementById('api-key-input').value.trim();
+    const hasValidKey = apiKey && apiKey.startsWith('sk-');
+    
+    this.updateConnectionStatus(hasValidKey);
+    
+    if (hasValidKey) {
+      // Optionally validate the key in the background
+      this.validateAPIKeyInBackground(apiKey);
+    }
+  }
+
+  async validateAPIKeyInBackground(apiKey) {
+    try {
+      const response = await fetch('https://api.openai.com/v1/models', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        // If key is invalid, show disconnected state
+        this.updateConnectionStatus(false);
+      }
+    } catch (error) {
+      // Connection failed, but keep showing connected state if key format is valid
+      console.warn('Failed to validate API key in background:', error);
+    }
   }
 
   updateAPIKeyLabel(provider) {
@@ -1365,6 +1477,350 @@ class PopupController {
       }
     } catch (error) {
       console.error('Error resetting privacy settings:', error);
+    }
+  }
+
+  // OpenAI Guided Setup Methods
+  openGuidedSetup() {
+    document.getElementById('openai-setup-modal').classList.remove('hidden');
+    this.goToStep(1);
+  }
+
+  closeGuidedSetup() {
+    document.getElementById('openai-setup-modal').classList.add('hidden');
+  }
+
+  showManualSetup() {
+    document.getElementById('openai-manual-settings').classList.remove('hidden');
+    document.getElementById('openai-disconnected').style.display = 'none';
+  }
+
+  goToStep(stepNumber) {
+    // Hide all steps
+    document.querySelectorAll('.setup-step').forEach(step => {
+      step.classList.remove('active');
+    });
+    
+    // Show target step
+    document.getElementById(`setup-step-${stepNumber}`).classList.add('active');
+  }
+
+  openOpenAIPlatform() {
+    // Open OpenAI platform in new tab
+    browserAPI.tabs.create({ 
+      url: 'https://platform.openai.com/api-keys',
+      active: true 
+    });
+    
+    // Move to next step
+    this.goToStep(2);
+  }
+
+  skipToManualInModal() {
+    this.closeGuidedSetup();
+    this.showManualSetup();
+  }
+
+  async validateSetupAPIKey() {
+    const apiKey = document.getElementById('setup-api-key').value.trim();
+    const validateBtn = document.getElementById('setup-validate-key');
+    const resultDiv = document.getElementById('setup-validation-result');
+    const statusDiv = document.getElementById('setup-validation-status');
+    
+    if (!apiKey) {
+      this.showValidationResult(resultDiv, statusDiv, 'error', 'Please enter your API key');
+      return;
+    }
+
+    if (!apiKey.startsWith('sk-')) {
+      this.showValidationResult(resultDiv, statusDiv, 'error', 'Invalid API key format. OpenAI keys start with "sk-"');
+      return;
+    }
+
+    validateBtn.textContent = '🔍 Validating...';
+    validateBtn.disabled = true;
+
+    try {
+      // Test the API key
+      const response = await fetch('https://api.openai.com/v1/models', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const models = data.data || [];
+        
+        this.showValidationResult(resultDiv, statusDiv, 'success', '✅ API key is valid!');
+        
+        // Populate model selection
+        await this.populateSetupModels(models);
+        
+        // Enable completion button
+        document.getElementById('complete-setup').classList.remove('disabled');
+        document.getElementById('complete-setup').disabled = false;
+        
+      } else {
+        const errorText = await response.text();
+        this.showValidationResult(resultDiv, statusDiv, 'error', `❌ Invalid API key: ${response.status} ${errorText}`);
+      }
+    } catch (error) {
+      this.showValidationResult(resultDiv, statusDiv, 'error', `❌ Connection failed: ${error.message}`);
+    } finally {
+      validateBtn.textContent = '🔍 Validate';
+      validateBtn.disabled = false;
+    }
+  }
+
+  async validateManualAPIKey() {
+    const apiKey = document.getElementById('api-key-input').value.trim();
+    const validateBtn = document.getElementById('api-key-validate-btn');
+    const resultDiv = document.getElementById('api-key-validation');
+    const statusDiv = document.getElementById('validation-status');
+    
+    if (!apiKey) {
+      this.showValidationResult(resultDiv, statusDiv, 'error', 'Please enter your API key');
+      return;
+    }
+
+    validateBtn.textContent = '✓ Validating...';
+    validateBtn.disabled = true;
+
+    try {
+      const response = await fetch('https://api.openai.com/v1/models', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const models = data.data || [];
+        
+        this.showValidationResult(resultDiv, statusDiv, 'success', '✅ API key is valid!');
+        await this.populateManualModels(models);
+        
+        // Update connection status
+        this.updateConnectionStatus(true);
+        
+      } else {
+        const errorText = await response.text();
+        this.showValidationResult(resultDiv, statusDiv, 'error', `❌ Invalid API key: ${response.status}`);
+      }
+    } catch (error) {
+      this.showValidationResult(resultDiv, statusDiv, 'error', `❌ Connection failed: ${error.message}`);
+    } finally {
+      validateBtn.textContent = '✓ Validate';
+      validateBtn.disabled = false;
+    }
+  }
+
+  showValidationResult(resultDiv, statusDiv, type, message) {
+    resultDiv.classList.remove('hidden', 'success', 'error');
+    resultDiv.classList.add(type);
+    statusDiv.textContent = message;
+  }
+
+  async populateSetupModels(models) {
+    const modelSelect = document.getElementById('setup-model-select');
+    const modelsDiv = document.getElementById('setup-models-selection');
+    
+    // Clear existing options
+    modelSelect.innerHTML = '';
+    
+    // Add recommended models first
+    const recommendedModels = ['gpt-4o-mini', 'gpt-4o', 'gpt-3.5-turbo', 'gpt-4-turbo'];
+    const availableRecommended = models.filter(model => 
+      recommendedModels.includes(model.id)
+    );
+    
+    if (availableRecommended.length > 0) {
+      const optgroup = document.createElement('optgroup');
+      optgroup.label = 'Recommended';
+      availableRecommended.forEach(model => {
+        const option = document.createElement('option');
+        option.value = model.id;
+        option.textContent = model.id;
+        optgroup.appendChild(option);
+      });
+      modelSelect.appendChild(optgroup);
+    }
+    
+    // Add other models
+    const otherModels = models.filter(model => 
+      !recommendedModels.includes(model.id) && model.id.startsWith('gpt')
+    );
+    
+    if (otherModels.length > 0) {
+      const optgroup = document.createElement('optgroup');
+      optgroup.label = 'Other GPT Models';
+      otherModels.forEach(model => {
+        const option = document.createElement('option');
+        option.value = model.id;
+        option.textContent = model.id;
+        optgroup.appendChild(option);
+      });
+      modelSelect.appendChild(optgroup);
+    }
+    
+    // Select the first recommended model
+    if (availableRecommended.length > 0) {
+      modelSelect.value = availableRecommended[0].id;
+    }
+    
+    modelsDiv.classList.remove('hidden');
+  }
+
+  async populateManualModels(models) {
+    const modelsDiv = document.getElementById('available-models');
+    const modelsList = document.getElementById('models-list');
+    
+    // Clear existing models
+    modelsList.innerHTML = '';
+    
+    // Add recommended models
+    const recommendedModels = ['gpt-4o-mini', 'gpt-4o', 'gpt-3.5-turbo'];
+    const availableRecommended = models.filter(model => 
+      recommendedModels.includes(model.id)
+    );
+    
+    availableRecommended.forEach(model => {
+      const modelCard = document.createElement('div');
+      modelCard.className = 'model-card';
+      modelCard.textContent = model.id;
+      modelCard.onclick = () => {
+        document.getElementById('model-input').value = model.id;
+        document.querySelectorAll('.model-card').forEach(card => card.classList.remove('selected'));
+        modelCard.classList.add('selected');
+      };
+      modelsList.appendChild(modelCard);
+    });
+    
+    modelsDiv.classList.remove('hidden');
+  }
+
+  async completeSetup() {
+    const apiKey = document.getElementById('setup-api-key').value.trim();
+    const selectedModel = document.getElementById('setup-model-select').value;
+    
+    try {
+      // Save settings
+      const settings = {
+        provider: 'openai',
+        apiKey: apiKey,
+        model: selectedModel,
+        customEndpoint: '',
+        ollamaPort: '11434'
+      };
+      
+      await browserAPI.runtime.sendMessage({ 
+        action: 'saveSettings', 
+        settings: settings 
+      });
+      
+      // Update UI
+      document.getElementById('provider-select').value = 'openai';
+      document.getElementById('api-key-input').value = apiKey;
+      document.getElementById('model-input').value = selectedModel;
+      
+      // Show success step
+      this.setupSuccessSummary(selectedModel);
+      this.goToStep(4);
+      
+    } catch (error) {
+      console.error('Error completing setup:', error);
+      alert('Failed to save settings. Please try again.');
+    }
+  }
+
+  setupSuccessSummary(model) {
+    const summaryDiv = document.getElementById('setup-summary');
+    summaryDiv.innerHTML = `
+      <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+        <span>Provider:</span>
+        <strong>OpenAI</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+        <span>Model:</span>
+        <strong>${model}</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between;">
+        <span>Status:</span>
+        <strong style="color: #28a745;">Connected ✅</strong>
+      </div>
+    `;
+  }
+
+  finishSetup() {
+    this.closeGuidedSetup();
+    this.updateConnectionStatus(true);
+    this.updateProviderSettings();
+    
+    // Switch to proofread tab
+    document.querySelector('[data-tab="proofread"]').click();
+  }
+
+  updateConnectionStatus(connected) {
+    const disconnectedCard = document.getElementById('openai-disconnected');
+    const connectedCard = document.getElementById('openai-connected');
+    const manualSettings = document.getElementById('openai-manual-settings');
+    
+    if (connected) {
+      disconnectedCard.classList.add('hidden');
+      connectedCard.classList.remove('hidden');
+      manualSettings.classList.add('hidden');
+      
+      // Update account info
+      const accountInfo = document.getElementById('openai-account-info');
+      accountInfo.textContent = 'API key configured and validated';
+    } else {
+      disconnectedCard.classList.remove('hidden');
+      connectedCard.classList.add('hidden');
+      manualSettings.classList.add('hidden');
+    }
+  }
+
+  async refreshOpenAIModels() {
+    const apiKey = document.getElementById('api-key-input').value.trim();
+    if (!apiKey) {
+      alert('Please configure your API key first');
+      return;
+    }
+
+    const btn = document.getElementById('openai-refresh-models-btn');
+    btn.textContent = '🔄 Refreshing...';
+    btn.disabled = true;
+
+    try {
+      const response = await fetch('https://api.openai.com/v1/models', {
+        headers: { 'Authorization': `Bearer ${apiKey}` }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        await this.populateManualModels(data.data || []);
+        alert('Models refreshed successfully!');
+      } else {
+        alert('Failed to refresh models. Check your API key.');
+      }
+    } catch (error) {
+      alert('Failed to connect to OpenAI: ' + error.message);
+    } finally {
+      btn.textContent = '🔄 Refresh Models';
+      btn.disabled = false;
+    }
+  }
+
+  disconnectOpenAI() {
+    if (confirm('Are you sure you want to disconnect from OpenAI?')) {
+      document.getElementById('api-key-input').value = '';
+      this.updateConnectionStatus(false);
+      this.saveSettings();
     }
   }
 }

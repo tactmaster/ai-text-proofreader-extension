@@ -234,9 +234,60 @@
             </div>
 
             <div id="openai-settings" class="section hidden">
-                <label for="api-key-input">OpenAI API Key:</label>
-                <input type="password" id="api-key-input" placeholder="sk-...">
-                <small>Your API key is stored locally and never shared</small>
+                <!-- OpenAI Connection Status -->
+                <div id="openai-connection-status" class="connection-status">
+                    <div id="openai-disconnected" class="status-card">
+                        <div class="status-icon">🔑</div>
+                        <div class="status-content">
+                            <h4>Connect to OpenAI</h4>
+                            <p>Get started with ChatGPT and GPT-4 models</p>
+                            <div class="button-group">
+                                <button id="openai-guided-setup-btn" class="primary-btn">
+                                    🚀 Connect with OpenAI
+                                </button>
+                                <button id="openai-manual-setup-btn" class="secondary-btn">
+                                    ⚙️ Manual Setup
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="openai-connected" class="status-card connected hidden">
+                        <div class="status-icon">✅</div>
+                        <div class="status-content">
+                            <h4>Connected to OpenAI</h4>
+                            <p id="openai-account-info">API key configured</p>
+                            <div class="button-group">
+                                <button id="openai-refresh-models-btn" class="secondary-btn">
+                                    🔄 Refresh Models
+                                </button>
+                                <button id="openai-disconnect-btn" class="secondary-btn">
+                                    🔌 Disconnect
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Manual API Key Setup (hidden by default) -->
+                <div id="openai-manual-settings" class="hidden">
+                    <label for="api-key-input">OpenAI API Key:</label>
+                    <div class="input-group">
+                        <input type="password" id="api-key-input" placeholder="sk-proj-...">
+                        <button id="api-key-validate-btn" class="secondary-btn" title="Validate API Key">
+                            ✓ Validate
+                        </button>
+                    </div>
+                    <small>Your API key is stored locally and never shared</small>
+                    
+                    <div id="api-key-validation" class="validation-result hidden">
+                        <div id="validation-status"></div>
+                        <div id="available-models" class="hidden">
+                            <label>Available Models:</label>
+                            <div id="models-list" class="models-grid"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div id="custom-settings" class="section hidden">
@@ -426,6 +477,150 @@
         <footer>
             <p>Select text on any webpage and right-click for AI proofreading</p>
         </footer>
+    </div>
+
+    <!-- OpenAI Guided Setup Modal -->
+    <div id="openai-setup-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🚀 Connect to OpenAI</h2>
+                <button id="close-setup-modal" class="close-btn">×</button>
+            </div>
+            
+            <div class="modal-body">
+                <div id="setup-step-1" class="setup-step active">
+                    <div class="step-header">
+                        <div class="step-number">1</div>
+                        <h3>Get Your OpenAI API Key</h3>
+                    </div>
+                    <p>We'll help you get an API key from OpenAI to use GPT models.</p>
+                    <div class="step-content">
+                        <div class="info-card">
+                            <h4>📋 What you'll need:</h4>
+                            <ul>
+                                <li>An OpenAI account (free to create)</li>
+                                <li>A payment method (API usage is pay-per-use)</li>
+                                <li>2-3 minutes to complete setup</li>
+                            </ul>
+                        </div>
+                        <div class="button-group">
+                            <button id="open-openai-platform" class="primary-btn">
+                                🌐 Open OpenAI Platform
+                            </button>
+                            <button id="skip-to-manual" class="secondary-btn">
+                                ⚙️ Manual Setup
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="setup-step-2" class="setup-step hidden">
+                    <div class="step-header">
+                        <div class="step-number">2</div>
+                        <h3>Create API Key</h3>
+                    </div>
+                    <p>Follow these steps on the OpenAI platform:</p>
+                    <div class="step-content">
+                        <div class="instruction-list">
+                            <div class="instruction-item">
+                                <div class="instruction-number">1</div>
+                                <div class="instruction-text">
+                                    <strong>Sign in or create account</strong><br>
+                                    Go to <a href="https://platform.openai.com" target="_blank">platform.openai.com</a>
+                                </div>
+                            </div>
+                            <div class="instruction-item">
+                                <div class="instruction-number">2</div>
+                                <div class="instruction-text">
+                                    <strong>Navigate to API Keys</strong><br>
+                                    Click your profile → "View API keys" or go to API keys section
+                                </div>
+                            </div>
+                            <div class="instruction-item">
+                                <div class="instruction-number">3</div>
+                                <div class="instruction-text">
+                                    <strong>Create new key</strong><br>
+                                    Click "Create new secret key" and give it a name like "AI Proofreader"
+                                </div>
+                            </div>
+                            <div class="instruction-item">
+                                <div class="instruction-number">4</div>
+                                <div class="instruction-text">
+                                    <strong>Copy the key</strong><br>
+                                    Copy the API key (starts with "sk-proj-...")
+                                </div>
+                            </div>
+                        </div>
+                        <div class="button-group">
+                            <button id="next-to-step-3" class="primary-btn">
+                                ✅ I have my API key
+                            </button>
+                            <button id="back-to-step-1" class="secondary-btn">
+                                ← Back
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="setup-step-3" class="setup-step hidden">
+                    <div class="step-header">
+                        <div class="step-number">3</div>
+                        <h3>Configure Extension</h3>
+                    </div>
+                    <p>Paste your API key below and we'll test the connection:</p>
+                    <div class="step-content">
+                        <div class="input-group">
+                            <label for="setup-api-key">OpenAI API Key:</label>
+                            <input type="password" id="setup-api-key" placeholder="sk-proj-..." autocomplete="off">
+                            <button id="setup-validate-key" class="secondary-btn">
+                                🔍 Validate
+                            </button>
+                        </div>
+                        
+                        <div id="setup-validation-result" class="validation-result hidden">
+                            <div id="setup-validation-status"></div>
+                            <div id="setup-models-selection" class="hidden">
+                                <label>Select preferred model:</label>
+                                <select id="setup-model-select">
+                                    <option value="">Loading models...</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="button-group">
+                            <button id="complete-setup" class="primary-btn disabled">
+                                🎉 Complete Setup
+                            </button>
+                            <button id="back-to-step-2" class="secondary-btn">
+                                ← Back
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="setup-step-4" class="setup-step hidden">
+                    <div class="step-header">
+                        <div class="step-number">✅</div>
+                        <h3>Setup Complete!</h3>
+                    </div>
+                    <div class="step-content">
+                        <div class="success-card">
+                            <div class="success-icon">🎉</div>
+                            <h4>You're all set!</h4>
+                            <p>Your OpenAI integration is configured and ready to use.</p>
+                            <div id="setup-summary">
+                                <!-- Dynamic content will be added here -->
+                            </div>
+                        </div>
+                        <div class="button-group">
+                            <button id="finish-setup" class="primary-btn">
+                                🚀 Start Proofreading
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="../shared/browser-api.js"></script>
