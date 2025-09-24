@@ -178,6 +178,21 @@ class BrowserAPI {
   // Tabs API abstraction
   get tabs() {
     return {
+      create: (createProperties) => {
+        if (this.isFirefox) {
+          return this.api.tabs.create(createProperties);
+        }
+        return new Promise((resolve, reject) => {
+          this.api.tabs.create(createProperties, (tab) => {
+            if (this.api.runtime.lastError) {
+              reject(new Error(this.api.runtime.lastError.message));
+            } else {
+              resolve(tab);
+            }
+          });
+        });
+      },
+
       query: (queryInfo) => {
         if (this.isFirefox) {
           return this.api.tabs.query(queryInfo);
