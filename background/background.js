@@ -105,6 +105,62 @@ class BrowserAPI {
     };
   }
 
+  // Tabs API abstraction
+  get tabs() {
+    if (!this.api || !this.api.tabs) {
+      console.error('[BrowserAPI] Tabs API not available');
+      return null;
+    }
+    
+    return {
+      create: (createProperties) => {
+        if (this.isFirefox) {
+          return this.api.tabs.create(createProperties);
+        } else {
+          return new Promise((resolve, reject) => {
+            this.api.tabs.create(createProperties, (tab) => {
+              if (this.api.runtime.lastError) {
+                reject(new Error(this.api.runtime.lastError.message));
+              } else {
+                resolve(tab);
+              }
+            });
+          });
+        }
+      },
+      query: (queryInfo) => {
+        if (this.isFirefox) {
+          return this.api.tabs.query(queryInfo);
+        } else {
+          return new Promise((resolve, reject) => {
+            this.api.tabs.query(queryInfo, (tabs) => {
+              if (this.api.runtime.lastError) {
+                reject(new Error(this.api.runtime.lastError.message));
+              } else {
+                resolve(tabs);
+              }
+            });
+          });
+        }
+      },
+      sendMessage: (tabId, message) => {
+        if (this.isFirefox) {
+          return this.api.tabs.sendMessage(tabId, message);
+        } else {
+          return new Promise((resolve, reject) => {
+            this.api.tabs.sendMessage(tabId, message, (response) => {
+              if (this.api.runtime.lastError) {
+                reject(new Error(this.api.runtime.lastError.message));
+              } else {
+                resolve(response);
+              }
+            });
+          });
+        }
+      }
+    };
+  }
+
   // Check if running in extension context
   isExtensionContext() {
     return !!(this.api && this.api.runtime && this.api.runtime.id);
