@@ -224,74 +224,135 @@ class PopupController {
   }
 
   setupGuidedSetupListeners() {
-    // Main setup buttons
-    document.getElementById('openai-guided-setup-btn').addEventListener('click', () => {
-      this.openGuidedSetup();
-    });
-
-    document.getElementById('openai-manual-setup-btn').addEventListener('click', () => {
-      this.showManualSetup();
-    });
-
-    // Modal controls
-    document.getElementById('close-setup-modal').addEventListener('click', () => {
-      this.closeGuidedSetup();
-    });
-
-    // Step navigation
-    document.getElementById('open-openai-platform').addEventListener('click', () => {
-      this.openOpenAIPlatform();
-    });
-
-    document.getElementById('skip-to-manual').addEventListener('click', () => {
-      this.skipToManualInModal();
-    });
-
-    document.getElementById('next-to-step-3').addEventListener('click', () => {
-      this.goToStep(3);
-    });
-
-    document.getElementById('back-to-step-1').addEventListener('click', () => {
-      this.goToStep(1);
-    });
-
-    document.getElementById('back-to-step-2').addEventListener('click', () => {
-      this.goToStep(2);
-    });
-
-    // API key validation
-    document.getElementById('setup-validate-key').addEventListener('click', () => {
-      this.validateSetupAPIKey();
-    });
-
-    document.getElementById('api-key-validate-btn').addEventListener('click', () => {
-      this.validateManualAPIKey();
-    });
-
-    // Setup completion
-    document.getElementById('complete-setup').addEventListener('click', () => {
-      this.completeSetup();
-    });
-
-    document.getElementById('finish-setup').addEventListener('click', () => {
-      this.finishSetup();
-    });
-
-    // Connection management
-    document.getElementById('openai-refresh-models-btn').addEventListener('click', () => {
-      this.refreshOpenAIModels();
-    });
-
-    document.getElementById('openai-disconnect-btn').addEventListener('click', () => {
-      this.disconnectOpenAI();
-    });
-
-    // Modal close on backdrop click
-    document.getElementById('openai-setup-modal').addEventListener('click', (e) => {
-      if (e.target.id === 'openai-setup-modal') {
-        this.closeGuidedSetup();
+    try {
+      console.log('[DEBUG] Setting up guided setup listeners...');
+      
+      // Main setup buttons
+      const guidedSetupBtn = document.getElementById('openai-guided-setup-btn');
+      if (guidedSetupBtn) {
+        guidedSetupBtn.addEventListener('click', () => {
+          console.log('[DEBUG] Guided setup button clicked');
+          this.openGuidedSetup();
+        });
+        console.log('[DEBUG] Guided setup button listener attached');
+      } else {
+        console.error('[ERROR] openai-guided-setup-btn not found in DOM');
       }
-    });
+
+      const manualSetupBtn = document.getElementById('openai-manual-setup-btn');
+      if (manualSetupBtn) {
+        manualSetupBtn.addEventListener('click', () => {
+          this.showManualSetup();
+        });
+      } else {
+        console.error('[ERROR] openai-manual-setup-btn not found in DOM');
+      }
+
+      // Modal controls
+      const closeModalBtn = document.getElementById('close-setup-modal');
+      if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', () => {
+          this.closeGuidedSetup();
+        });
+      } else {
+        console.warn('[WARN] close-setup-modal not found in DOM');
+      }
+
+      // Step navigation
+      const openPlatformBtn = document.getElementById('open-openai-platform');
+      if (openPlatformBtn) {
+        openPlatformBtn.addEventListener('click', () => {
+          this.openOpenAIPlatform();
+        });
+      }
+
+      const skipToManualBtn = document.getElementById('skip-to-manual');
+      if (skipToManualBtn) {
+        skipToManualBtn.addEventListener('click', () => {
+          this.skipToManualInModal();
+        });
+      }
+
+      const nextToStep3Btn = document.getElementById('next-to-step-3');
+      if (nextToStep3Btn) {
+        nextToStep3Btn.addEventListener('click', () => {
+          this.goToStep(3);
+        });
+      }
+
+      const backToStep1Btn = document.getElementById('back-to-step-1');
+      if (backToStep1Btn) {
+        backToStep1Btn.addEventListener('click', () => {
+          this.goToStep(1);
+        });
+      }
+
+      const backToStep2Btn = document.getElementById('back-to-step-2');
+      if (backToStep2Btn) {
+        backToStep2Btn.addEventListener('click', () => {
+          this.goToStep(2);
+        });
+      }
+
+      // API key validation
+      const setupValidateKeyBtn = document.getElementById('setup-validate-key');
+      if (setupValidateKeyBtn) {
+        setupValidateKeyBtn.addEventListener('click', () => {
+          this.validateSetupAPIKey();
+        });
+      }
+
+      const apiKeyValidateBtn = document.getElementById('api-key-validate-btn');
+      if (apiKeyValidateBtn) {
+        apiKeyValidateBtn.addEventListener('click', () => {
+          this.validateManualAPIKey();
+        });
+      }
+
+      // Setup completion
+      const completeSetupBtn = document.getElementById('complete-setup');
+      if (completeSetupBtn) {
+        completeSetupBtn.addEventListener('click', () => {
+          this.completeSetup();
+        });
+      }
+
+      const finishSetupBtn = document.getElementById('finish-setup');
+      if (finishSetupBtn) {
+        finishSetupBtn.addEventListener('click', () => {
+          this.finishSetup();
+        });
+      }
+
+      // Connection management
+      const refreshModelsBtn = document.getElementById('openai-refresh-models-btn');
+      if (refreshModelsBtn) {
+        refreshModelsBtn.addEventListener('click', () => {
+          this.refreshOpenAIModels();
+        });
+      }
+
+      const disconnectBtn = document.getElementById('openai-disconnect-btn');
+      if (disconnectBtn) {
+        disconnectBtn.addEventListener('click', () => {
+          this.disconnectOpenAI();
+        });
+      }
+
+      // Modal close on backdrop click
+      const modal = document.getElementById('openai-setup-modal');
+      if (modal) {
+        modal.addEventListener('click', (e) => {
+          if (e.target.id === 'openai-setup-modal') {
+            this.closeGuidedSetup();
+          }
+        });
+      }
+
+      console.log('[DEBUG] All guided setup listeners attached successfully');
+    } catch (error) {
+      console.error('[ERROR] Failed to setup guided setup listeners:', error);
+    }
   }
 
   async loadSettings() {
