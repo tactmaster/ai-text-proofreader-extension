@@ -49,6 +49,26 @@ class BrowserAPI {
             });
           }
         }
+      },
+      local: {
+        get: (keys) => {
+          if (this.isFirefox) {
+            return this.api.storage.local.get(keys);
+          } else {
+            return new Promise((resolve) => {
+              this.api.storage.local.get(keys, resolve);
+            });
+          }
+        },
+        set: (data) => {
+          if (this.isFirefox) {
+            return this.api.storage.local.set(data);
+          } else {
+            return new Promise((resolve) => {
+              this.api.storage.local.set(data, resolve);
+            });
+          }
+        }
       }
     };
   }
